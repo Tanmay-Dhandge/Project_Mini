@@ -1,16 +1,9 @@
-This is a great addition. I have integrated the **RFID features (UID display + Access Log)** into the professional dashboard design.
-
-I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also converted the log logic to work with the **Paho MQTT** library used in the professional dashboard to ensure connection stability.
-
-### Updated Professional Dashboard Code
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Home & Security Center</title>
+    <title>Smart Home & Security Dashboard</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -127,7 +120,7 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
             background: #e2e8f0;
         }
 
-        /* --- Sensor & RFID Cards --- */
+        /* --- Cards --- */
         .sensor-card {
             grid-column: span 12;
             background: var(--card-bg);
@@ -154,9 +147,25 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
 
         .sensor-card:hover { transform: translateY(-3px); }
 
+        /* Responsive Columns for Sensors */
         @media (min-width: 640px) { .sensor-card { grid-column: span 6; } }
-        @media (min-width: 1024px) { .sensor-card { grid-column: span 4; } } 
-        @media (min-width: 1280px) { .sensor-card { grid-column: span 3; } }
+        @media (min-width: 1024px) { .sensor-card { grid-column: span 3; } } /* 4 per row */
+
+        /* Special sizing for RFID and Log */
+        .card-rfid { grid-column: span 12; }
+        @media (min-width: 1024px) { .card-rfid { grid-column: span 4; } }
+
+        .log-panel {
+            grid-column: span 12;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 400px;
+        }
+        @media (min-width: 1024px) { .log-panel { grid-column: span 8; } }
 
         .card-header {
             display: flex;
@@ -197,7 +206,7 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
             margin-left: 4px;
         }
 
-        /* Specific Card Styles */
+        /* Card Colors */
         .card-rfid .icon-box { background: #f3e8ff; color: #7e22ce; }
         .card-rfid::before { background: #7e22ce; }
         
@@ -206,21 +215,14 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
         
         .card-humid .icon-box { background: #dbeafe; color: var(--primary); }
         .card-humid::before { background: var(--primary); }
-        
-        /* --- Access Log Section --- */
-        .log-panel {
-            grid-column: span 12;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            max-height: 400px;
-        }
-        
-        @media (min-width: 1024px) { .log-panel { grid-column: span 8; } }
 
+        .card-light .icon-box { background: #fef3c7; color: var(--warning); }
+        .card-light::before { background: var(--warning); }
+
+        .card-air .icon-box { background: #dcfce7; color: var(--success); }
+        .card-air::before { background: var(--success); }
+
+        /* --- Log Styling --- */
         .log-header {
             padding: 20px 24px;
             border-bottom: 1px solid #e2e8f0;
@@ -236,6 +238,7 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
             padding: 0;
             margin: 0;
             list-style: none;
+            height: 300px;
         }
 
         .log-item {
@@ -246,8 +249,6 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
             justify-content: space-between;
             animation: slideIn 0.3s ease;
         }
-
-        .log-item:last-child { border-bottom: none; }
         
         .log-info { display: flex; flex-direction: column; gap: 4px; }
         .log-uid { font-family: monospace; font-weight: 600; font-size: 1.1em; color: var(--dark); }
@@ -277,11 +278,6 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
-        }
-        
-        @media (min-width: 1024px) { 
-            /* Make controls take remaining space next to logs if needed, or full width below */
-            .control-panel { grid-column: span 12; } 
         }
 
         .control-item {
@@ -365,8 +361,8 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
 
     <nav class="navbar">
         <div class="brand">
-            <i class="fa-solid fa-shield-halved"></i>
-            SecureHome
+            <i class="fa-solid fa-layer-group"></i>
+            IoT Dashboard
         </div>
         <div id="connectionStatus" class="disconnected">
             <div class="connection-badge">
@@ -378,6 +374,49 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
 
     <div class="container">
         
+        <div class="section-title">Environmental Data</div>
+
+        <div class="sensor-card card-temp">
+            <div class="card-header">
+                <span class="card-label">Temperature</span>
+                <div class="icon-box"><i class="fa-solid fa-temperature-half"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="temp">--</span><span class="metric-unit">°C</span>
+            </div>
+        </div>
+
+        <div class="sensor-card card-humid">
+            <div class="card-header">
+                <span class="card-label">Humidity</span>
+                <div class="icon-box"><i class="fa-solid fa-droplet"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="humidity">--</span><span class="metric-unit">%</span>
+            </div>
+        </div>
+
+        <div class="sensor-card card-light">
+            <div class="card-header">
+                <span class="card-label">Light Intensity</span>
+                <div class="icon-box"><i class="fa-solid fa-sun"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="light">--</span><span class="metric-unit">%</span>
+            </div>
+        </div>
+
+        <div class="sensor-card card-air">
+            <div class="card-header">
+                <span class="card-label">Air Quality</span>
+                <div class="icon-box"><i class="fa-solid fa-wind"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="airquality">--</span><span class="metric-unit">PPM</span>
+            </div>
+        </div>
+
+
         <div class="section-title">Security & Access Control</div>
 
         <div class="sensor-card card-rfid">
@@ -404,27 +443,7 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
         </div>
 
 
-        <div class="section-title">Environment & Device Status</div>
-
-        <div class="sensor-card card-temp">
-            <div class="card-header">
-                <span class="card-label">Temperature</span>
-                <div class="icon-box"><i class="fa-solid fa-temperature-half"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="temp">--</span><span class="metric-unit">°C</span>
-            </div>
-        </div>
-
-        <div class="sensor-card card-humid">
-            <div class="card-header">
-                <span class="card-label">Humidity</span>
-                <div class="icon-box"><i class="fa-solid fa-droplet"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="humidity">--</span><span class="metric-unit">%</span>
-            </div>
-        </div>
+        <div class="section-title">Device Controls</div>
 
         <div class="control-panel">
             <div class="control-item" id="gateControl">
@@ -478,11 +497,10 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
         const TOPIC_SENSORS = "project/sensors";
         const TOPIC_STATUS = "project/status";
         const TOPIC_CONTROL = "project/control";
-        const TOPIC_RFID = "project/rfid"; // Added RFID Topic
+        const TOPIC_RFID = "project/rfid";
 
         let client;
         let reconnectAttempts = 0;
-        let accessLogData = [];
 
         // --- Initialization ---
         window.addEventListener('load', () => {
@@ -517,7 +535,7 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
             
             client.subscribe(TOPIC_SENSORS);
             client.subscribe(TOPIC_STATUS);
-            client.subscribe(TOPIC_RFID); // Subscribe to RFID
+            client.subscribe(TOPIC_RFID);
             
             showToast("Connected Successfully", "success");
         }
@@ -552,9 +570,11 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
 
         // --- Dashboard Update Logic ---
         function updateDashboard(data) {
-            // Environment
+            // Environment Data
             if (data.dht_temp) document.getElementById('temp').textContent = data.dht_temp.toFixed(1);
             if (data.dht_humidity) document.getElementById('humidity').textContent = data.dht_humidity.toFixed(1);
+            if (data.lightPercent !== undefined) document.getElementById('light').textContent = data.lightPercent.toFixed(0);
+            if (data.mq135 !== undefined) document.getElementById('airquality').textContent = data.mq135;
 
             // Controls
             updateControlState('fanControl', data.fan);
@@ -691,4 +711,3 @@ I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also 
     </script>
 </body>
 </html>
-```
