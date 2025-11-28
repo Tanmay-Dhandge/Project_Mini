@@ -224,10 +224,6 @@
         /* Air */
         .type-air::before { background: var(--success); }
         .type-air .card-icon { background: #dcfce7; color: var(--success); }
-        
-        /* RFID */
-        .type-rfid::before { background: var(--dark); }
-        .type-rfid .card-icon { background: #f1f5f9; color: var(--dark); }
 
         /* Controls */
         .type-control::before { background: #64748b; }
@@ -235,31 +231,6 @@
         .type-control.active::before { background: var(--success); }
         .type-control.active .card-icon { background: #dcfce7; color: var(--success); }
         .type-control.active { border-color: #bbf7d0; background: #f0fdf4; }
-
-        /* --- Special Log Card --- */
-        .log-list {
-            list-style: none;
-            overflow-y: auto;
-            max-height: 120px; /* Limits height to match other cards */
-            margin-top: 10px;
-            padding-right: 5px;
-        }
-
-        /* Custom Scrollbar for Log */
-        .log-list::-webkit-scrollbar { width: 4px; }
-        .log-list::-webkit-scrollbar-track { background: #f1f5f9; }
-        .log-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-
-        .log-item {
-            font-size: 0.8rem;
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-        }
-        .log-item:first-child { padding-top: 0; }
-        .log-success { color: var(--success); font-weight: 600; }
-        .log-fail { color: var(--danger); font-weight: 600; }
 
         /* --- Toggle Switch --- */
         .toggle-wrapper {
@@ -429,7 +400,7 @@
 
         </div>
 
-        <div class="section-header">Control & Security</div>
+        <div class="section-header">Device Controls</div>
         <div class="grid-container">
 
             <div class="card type-control" id="gateControl">
@@ -472,27 +443,6 @@
                 </div>
             </div>
 
-            <div class="card type-rfid">
-                <div class="card-top">
-                    <span class="card-title">RFID Scanner</span>
-                    <div class="card-icon"><i class="fa-solid fa-id-card"></i></div>
-                </div>
-                <div class="card-body">
-                    <div style="font-family: monospace; font-size: 1.4rem; font-weight: 700;" id="rfidUid">--:--:--</div>
-                    <div class="sub-text" id="rfidStatus">Ready to scan</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-top" style="margin-bottom: 5px;">
-                    <span class="card-title">Access Log</span>
-                    <div class="card-icon" style="background:#f1f5f9; color:#64748b;"><i class="fa-solid fa-list"></i></div>
-                </div>
-                <ul class="log-list" id="accessLog">
-                    <li style="color: #94a3b8; text-align: center; padding-top: 20px;">No recent activity</li>
-                </ul>
-            </div>
-
         </div>
 
     </div>
@@ -514,7 +464,6 @@
         const TOPIC_SENSORS = "project/sensors";
         const TOPIC_STATUS = "project/status";
         const TOPIC_CONTROL = "project/control";
-        const TOPIC_RFID = "project/rfid";
 
         let client;
 
@@ -543,7 +492,6 @@
             updateConnectionUI("connected", "Online");
             client.subscribe(TOPIC_SENSORS);
             client.subscribe(TOPIC_STATUS);
-            client.subscribe(TOPIC_RFID);
             showToast("System Connected", "success");
         }
 
@@ -563,8 +511,7 @@
         function onMessageArrived(msg) {
             try {
                 const data = JSON.parse(msg.payloadString);
-                if (msg.destinationName === TOPIC_RFID) handleRfidScan(data);
-                else updateDashboard(data);
+                updateDashboard(data);
             } catch (e) { console.error(e); }
         }
 
@@ -600,40 +547,6 @@
                     card.classList.remove('active');
                 }
             }
-        }
-
-        function handleRfidScan(data) {
-            document.getElementById('rfidUid').textContent = data.uid || "Unknown";
-            const statusEl = document.getElementById('rfidStatus');
-            
-            if (data.authorized) {
-                statusEl.textContent = "Authorized Access";
-                statusEl.style.color = "var(--success)";
-                showToast("Access Granted", "success");
-            } else {
-                statusEl.textContent = "Access Denied";
-                statusEl.style.color = "var(--danger)";
-                showToast("Access Denied", "error");
-            }
-            addToLog(data);
-        }
-
-        function addToLog(data) {
-            const list = document.getElementById('accessLog');
-            if (list.children.length === 1 && list.children[0].textContent.includes("No recent")) list.innerHTML = '';
-
-            const li = document.createElement('li');
-            li.className = 'log-item';
-            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const statusClass = data.authorized ? 'log-success' : 'log-fail';
-            const statusText = data.authorized ? 'Auth' : 'Denied';
-
-            li.innerHTML = `
-                <span style="font-family:monospace; font-weight:600;">${data.uid}</span>
-                <span class="${statusClass}">${statusText}</span>
-                <span style="color:#94a3b8">${time}</span>
-            `;
-            list.insertBefore(li, list.firstChild);
         }
 
         function updateToggle(id, active) {
