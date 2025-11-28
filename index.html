@@ -1,9 +1,16 @@
+This is a great addition. I have integrated the **RFID features (UID display + Access Log)** into the professional dashboard design.
+
+I kept the sleek "SaaS" look but added a dedicated **Security Section**. I also converted the log logic to work with the **Paho MQTT** library used in the professional dashboard to ensure connection stability.
+
+### Updated Professional Dashboard Code
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoT Control Center</title>
+    <title>Smart Home & Security Center</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -101,16 +108,26 @@
 
         .section-title {
             grid-column: span 12;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             color: var(--text-muted);
-            font-weight: 600;
+            font-weight: 700;
             margin-top: 10px;
             margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* --- Sensor Cards --- */
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        /* --- Sensor & RFID Cards --- */
         .sensor-card {
             grid-column: span 12;
             background: var(--card-bg);
@@ -138,8 +155,8 @@
         .sensor-card:hover { transform: translateY(-3px); }
 
         @media (min-width: 640px) { .sensor-card { grid-column: span 6; } }
-        @media (min-width: 1024px) { .sensor-card { grid-column: span 4; } } /* 3 per row */
-        @media (min-width: 1280px) { .sensor-card { grid-column: span 2; } .sensor-card.wide { grid-column: span 4; } }
+        @media (min-width: 1024px) { .sensor-card { grid-column: span 4; } } 
+        @media (min-width: 1280px) { .sensor-card { grid-column: span 3; } }
 
         .card-header {
             display: flex;
@@ -180,81 +197,123 @@
             margin-left: 4px;
         }
 
-        .card-footer {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Color Variances */
+        /* Specific Card Styles */
+        .card-rfid .icon-box { background: #f3e8ff; color: #7e22ce; }
+        .card-rfid::before { background: #7e22ce; }
+        
         .card-temp .icon-box { background: #fee2e2; color: var(--danger); }
         .card-temp::before { background: var(--danger); }
         
         .card-humid .icon-box { background: #dbeafe; color: var(--primary); }
         .card-humid::before { background: var(--primary); }
         
-        .card-air .icon-box { background: #dcfce7; color: var(--success); }
-        .card-air::before { background: var(--success); }
+        /* --- Access Log Section --- */
+        .log-panel {
+            grid-column: span 12;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 400px;
+        }
         
-        .card-light .icon-box { background: #fef3c7; color: var(--warning); }
-        .card-light::before { background: var(--warning); }
+        @media (min-width: 1024px) { .log-panel { grid-column: span 8; } }
+
+        .log-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-list {
+            overflow-y: auto;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .log-item {
+            padding: 15px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+
+        .log-item:last-child { border-bottom: none; }
+        
+        .log-info { display: flex; flex-direction: column; gap: 4px; }
+        .log-uid { font-family: monospace; font-weight: 600; font-size: 1.1em; color: var(--dark); }
+        .log-time { font-size: 0.8rem; color: var(--text-muted); }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
 
         /* --- Controls --- */
         .control-panel {
             grid-column: span 12;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            box-shadow: var(--shadow);
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
         }
+        
+        @media (min-width: 1024px) { 
+            /* Make controls take remaining space next to logs if needed, or full width below */
+            .control-panel { grid-column: span 12; } 
+        }
 
         .control-item {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 16px;
-            border-radius: 10px;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            padding: 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
             transition: all 0.2s;
+            border: 2px solid transparent;
         }
 
-        .control-item:hover {
-            border-color: #cbd5e1;
-            background: #f1f5f9;
-        }
+        .control-item:hover { transform: translateY(-2px); border-color: #e2e8f0; }
+        .control-item.active { border-color: var(--success); background: #f0fdf4; }
 
-        .control-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .control-info { display: flex; align-items: center; gap: 15px; }
+        .control-icon { 
+            width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; 
+            display: flex; alignItems: center; justify-content: center; color: var(--text-muted);
         }
-
-        .control-info i {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-        }
-
-        .control-name {
-            font-weight: 600;
-            color: var(--dark);
-        }
+        .control-item.active .control-icon { background: var(--success); color: white; }
 
         /* Toggle Switch */
         .toggle {
             position: relative;
-            width: 50px;
-            height: 28px;
+            width: 48px;
+            height: 26px;
             background: #cbd5e1;
-            border-radius: 14px;
+            border-radius: 13px;
             transition: 0.3s;
         }
 
@@ -263,8 +322,8 @@
             position: absolute;
             top: 3px;
             left: 3px;
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             background: white;
             border-radius: 50%;
             transition: 0.3s;
@@ -273,21 +332,6 @@
 
         .active .toggle { background: var(--success); }
         .active .toggle::after { transform: translateX(22px); }
-        
-        .control-item.active .control-info i { color: var(--success); }
-
-        /* Manual Mode Specifics */
-        .manual-mode .toggle { background: var(--warning); }
-        .manual-mode .control-info i { color: var(--warning); }
-
-        /* --- Footer --- */
-        .footer {
-            grid-column: span 12;
-            text-align: center;
-            margin-top: 40px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
 
         /* --- Toast Notification --- */
         .toast-container {
@@ -317,12 +361,12 @@
 
     </style>
 </head>
-<body id="appBody">
+<body>
 
     <nav class="navbar">
         <div class="brand">
-            <i class="fa-solid fa-house-signal"></i>
-            Smart Home
+            <i class="fa-solid fa-shield-halved"></i>
+            SecureHome
         </div>
         <div id="connectionStatus" class="disconnected">
             <div class="connection-badge">
@@ -334,7 +378,33 @@
 
     <div class="container">
         
-        <div class="section-title">Environmental Monitoring</div>
+        <div class="section-title">Security & Access Control</div>
+
+        <div class="sensor-card card-rfid">
+            <div class="card-header">
+                <span class="card-label">RFID Scanner</span>
+                <div class="icon-box"><i class="fa-solid fa-id-card"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="rfidUid" style="font-size: 1.5rem; font-family: monospace;">--:--:--:--</span>
+            </div>
+            <div class="card-footer" style="margin-top: 15px; font-size: 0.9rem;">
+                <span id="rfidStatus" style="color: var(--text-muted);">Waiting for card...</span>
+            </div>
+        </div>
+
+        <div class="log-panel">
+            <div class="log-header">
+                <span><i class="fa-solid fa-list-check" style="margin-right: 8px;"></i> Access History</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Last 10 Entries</span>
+            </div>
+            <ul class="log-list" id="accessLog">
+                <li style="padding: 20px; text-align: center; color: var(--text-muted);">No access attempts recorded yet.</li>
+            </ul>
+        </div>
+
+
+        <div class="section-title">Environment & Device Status</div>
 
         <div class="sensor-card card-temp">
             <div class="card-header">
@@ -343,10 +413,6 @@
             </div>
             <div>
                 <span class="metric-value" id="temp">--</span><span class="metric-unit">°C</span>
-            </div>
-            <div class="card-footer">
-                <span>DHT: <b id="dht-temp">--</b>°C</span>
-                <span>BMP: <b id="bmp-temp">--</b>°C</span>
             </div>
         </div>
 
@@ -358,94 +424,38 @@
             <div>
                 <span class="metric-value" id="humidity">--</span><span class="metric-unit">%</span>
             </div>
-            <div class="card-footer">
-                <span>Relative Humidity</span>
-            </div>
         </div>
-
-        <div class="sensor-card">
-            <div class="card-header">
-                <span class="card-label">Atmospheric Pressure</span>
-                <div class="icon-box"><i class="fa-solid fa-gauge-high"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="pressure">--</span><span class="metric-unit">hPa</span>
-            </div>
-            <div class="card-footer">
-                <span>Barometric Sensor</span>
-            </div>
-        </div>
-
-        <div class="sensor-card card-light">
-            <div class="card-header">
-                <span class="card-label">Light Intensity</span>
-                <div class="icon-box"><i class="fa-solid fa-sun"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="light">--</span><span class="metric-unit">%</span>
-            </div>
-            <div class="card-footer">
-                <span>Ambient Sensor</span>
-            </div>
-        </div>
-
-        <div class="sensor-card card-air wide">
-            <div class="card-header">
-                <span class="card-label">Air Quality Index</span>
-                <div class="icon-box"><i class="fa-solid fa-wind"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="airquality">--</span><span class="metric-unit">PPM</span>
-            </div>
-            <div class="card-footer">
-                <span>MQ135 Gas Sensor</span>
-                <span id="airStatus">Normal</span>
-            </div>
-        </div>
-
-        <div class="section-title">Device Control Center</div>
 
         <div class="control-panel">
-            
-            <div class="control-item" id="fanControl" onclick="toggleDevice('fan')">
+            <div class="control-item" id="gateControl">
                 <div class="control-info">
-                    <i class="fa-solid fa-fan"></i>
-                    <span class="control-name">Ventilation Fan</span>
-                </div>
-                <div class="toggle"></div>
-            </div>
-
-            <div class="control-item" id="lightControl" onclick="toggleDevice('light')">
-                <div class="control-info">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    <span class="control-name">Main Lights</span>
-                </div>
-                <div class="toggle"></div>
-            </div>
-
-            <div class="control-item" id="doorControl" onclick="toggleDevice('door')">
-                <div class="control-info">
-                    <i class="fa-solid fa-door-open"></i>
-                    <span class="control-name">Door Lock</span>
-                </div>
-                <div class="toggle"></div>
-            </div>
-
-            <div class="control-item" id="modeControl" onclick="toggleDevice('mode')">
-                <div class="control-info">
-                    <i class="fa-solid fa-robot"></i>
+                    <div class="control-icon"><i class="fa-solid fa-door-open"></i></div>
                     <div>
-                        <span class="control-name">System Mode</span>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="modeText">Auto</div>
+                        <div style="font-weight: 600;">Main Gate</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);" id="gateStatusText">Closed</div>
                     </div>
                 </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="sendControl('gate-open')" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer;">Open</button>
+                    <button onclick="sendControl('gate-close')" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer;">Close</button>
+                </div>
+            </div>
+
+            <div class="control-item" id="fanControl" onclick="sendControl('fan-toggle')">
+                <div class="control-info">
+                    <div class="control-icon"><i class="fa-solid fa-fan"></i></div>
+                    <span style="font-weight: 600;">Fan</span>
+                </div>
                 <div class="toggle"></div>
             </div>
 
-        </div>
-
-        <div class="footer">
-            <p>Last Data Update: <span id="timestamp">Waiting for data...</span></p>
+            <div class="control-item" id="lightControl" onclick="sendControl('light-toggle')">
+                <div class="control-info">
+                    <div class="control-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                    <span style="font-weight: 600;">Light</span>
+                </div>
+                <div class="toggle"></div>
+            </div>
         </div>
 
     </div>
@@ -453,7 +463,7 @@
     <div class="toast-container">
         <div id="toast" class="toast">
             <i id="toastIcon" class="fa-solid fa-circle-check"></i>
-            <span id="toastMessage">Connected successfully</span>
+            <span id="toastMessage">System Ready</span>
         </div>
     </div>
 
@@ -468,10 +478,11 @@
         const TOPIC_SENSORS = "project/sensors";
         const TOPIC_STATUS = "project/status";
         const TOPIC_CONTROL = "project/control";
+        const TOPIC_RFID = "project/rfid"; // Added RFID Topic
 
         let client;
         let reconnectAttempts = 0;
-        const MAX_RECONNECT_ATTEMPTS = 10;
+        let accessLogData = [];
 
         // --- Initialization ---
         window.addEventListener('load', () => {
@@ -495,158 +506,169 @@
                 keepAliveInterval: 30
             };
 
-            updateConnectionUI("connecting", "Connecting to Server...");
+            updateConnectionUI("connecting", "Connecting...");
             client.connect(options);
         }
 
         function onConnect() {
             console.log("✅ MQTT Connected");
-            updateConnectionUI("connected", "Live Connection");
+            updateConnectionUI("connected", "System Online");
             reconnectAttempts = 0;
             
             client.subscribe(TOPIC_SENSORS);
             client.subscribe(TOPIC_STATUS);
+            client.subscribe(TOPIC_RFID); // Subscribe to RFID
             
-            showToast("System Connected", "success");
+            showToast("Connected Successfully", "success");
         }
 
         function onFailure(error) {
             console.error("❌ Connection failed:", error.errorMessage);
             updateConnectionUI("disconnected", "Connection Failed");
-            
-            reconnectAttempts++;
-            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                setTimeout(connectMQTT, 5000);
-            } else {
-                showToast("Max reconnect attempts reached. Refresh page.", "error");
-            }
+            setTimeout(connectMQTT, 5000);
         }
 
         function onConnectionLost(responseObject) {
             if (responseObject.errorCode !== 0) {
-                console.warn("⚠️ Connection Lost:", responseObject.errorMessage);
+                console.warn("⚠️ Connection Lost");
                 updateConnectionUI("disconnected", "Reconnecting...");
                 setTimeout(connectMQTT, 3000);
             }
         }
 
         function onMessageArrived(message) {
-            // console.log("📩 Data:", message.payloadString);
             try {
                 const data = JSON.parse(message.payloadString);
-                updateDashboard(data);
+                
+                if (message.destinationName === TOPIC_RFID) {
+                    handleRfidScan(data);
+                } else {
+                    updateDashboard(data);
+                }
             } catch (e) {
                 console.error("JSON Parse Error:", e);
             }
         }
 
-        // --- Dashboard Logic ---
+        // --- Dashboard Update Logic ---
         function updateDashboard(data) {
-            // Helper to set text content safely
-            const setTxt = (id, val) => {
-                const el = document.getElementById(id);
-                if(el) el.textContent = val;
-            };
+            // Environment
+            if (data.dht_temp) document.getElementById('temp').textContent = data.dht_temp.toFixed(1);
+            if (data.dht_humidity) document.getElementById('humidity').textContent = data.dht_humidity.toFixed(1);
 
-            // Temperature
-            if (data.dht_temp) {
-                setTxt('dht-temp', data.dht_temp.toFixed(1));
-                setTxt('temp', data.dht_temp.toFixed(1));
-            }
-            if (data.bmp_temp) setTxt('bmp-temp', data.bmp_temp.toFixed(1));
-
-            // Humidity & Pressure
-            if (data.dht_humidity) setTxt('humidity', data.dht_humidity.toFixed(1));
-            if (data.pressure_hpa) setTxt('pressure', data.pressure_hpa.toFixed(1));
-
-            // Light
-            if (data.lightPercent !== undefined) setTxt('light', data.lightPercent.toFixed(0));
-
-            // Air Quality
-            if (data.mq135 !== undefined) {
-                setTxt('airquality', data.mq135);
-                // Dynamic feedback for air quality
-                const statusEl = document.getElementById('airStatus');
-                if(data.mq135 > 1000) {
-                    statusEl.textContent = "Poor Quality";
-                    statusEl.style.color = "var(--danger)";
-                } else {
-                    statusEl.textContent = "Good Quality";
-                    statusEl.style.color = "var(--success)";
-                }
-            }
-
-            // Controls Visualization
+            // Controls
             updateControlState('fanControl', data.fan);
             updateControlState('lightControl', data.light);
-            updateControlState('doorControl', data.door);
 
-            // Special handling for Mode
-            if (data.mode !== undefined) {
-                const isManual = data.mode === "Manual";
-                const modeEl = document.getElementById('modeControl');
-                const modeText = document.getElementById('modeText');
-                
-                if (isManual) {
-                    modeEl.classList.add('active', 'manual-mode');
-                    modeText.textContent = "Manual Override";
+            // Gate Visual Status
+            if (data.gate !== undefined) {
+                const gateEl = document.getElementById('gateControl');
+                const gateText = document.getElementById('gateStatusText');
+                if (data.gate) {
+                    gateEl.classList.add('active');
+                    gateText.textContent = "Open";
+                    gateText.style.color = "var(--success)";
                 } else {
-                    modeEl.classList.remove('active', 'manual-mode');
-                    modeText.textContent = "Automatic Control";
+                    gateEl.classList.remove('active');
+                    gateText.textContent = "Closed";
+                    gateText.style.color = "var(--text-muted)";
                 }
             }
-
-            // Timestamp
-            const now = new Date();
-            setTxt('timestamp', now.toLocaleTimeString());
         }
 
-        function updateControlState(elementId, isActive) {
-            if (isActive === undefined) return;
-            const el = document.getElementById(elementId);
+        function handleRfidScan(data) {
+            // 1. Update Scanner Card
+            const uidEl = document.getElementById('rfidUid');
+            const statusEl = document.getElementById('rfidStatus');
+            const cardEl = document.querySelector('.card-rfid');
+
+            uidEl.textContent = data.uid || "Unknown";
+
+            if (data.authorized) {
+                statusEl.textContent = "✅ Access Granted";
+                statusEl.style.color = "var(--success)";
+                statusEl.style.fontWeight = "bold";
+                showToast("Access Granted: Gate Opening", "success");
+                
+                // Visual Pulse
+                cardEl.style.border = "2px solid var(--success)";
+                setTimeout(() => cardEl.style.border = "none", 2000);
+            } else {
+                statusEl.textContent = "❌ Access Denied";
+                statusEl.style.color = "var(--danger)";
+                statusEl.style.fontWeight = "bold";
+                showToast("Unauthorized Access Attempt", "error");
+                
+                // Visual Pulse
+                cardEl.style.border = "2px solid var(--danger)";
+                setTimeout(() => cardEl.style.border = "none", 2000);
+            }
+
+            // 2. Add to Log
+            addToLog(data);
+        }
+
+        function addToLog(data) {
+            const list = document.getElementById('accessLog');
+            
+            // Remove "No access attempts" message if it exists
+            if (list.children.length === 1 && list.children[0].textContent.includes("No access")) {
+                list.innerHTML = '';
+            }
+
+            // Create Log Item
+            const li = document.createElement('li');
+            li.className = 'log-item';
+            
+            const timeStr = new Date().toLocaleTimeString();
+            const badgeClass = data.authorized ? 'badge-success' : 'badge-danger';
+            const iconClass = data.authorized ? 'fa-check' : 'fa-ban';
+            const statusText = data.authorized ? 'Authorized' : 'Denied';
+
+            li.innerHTML = `
+                <div class="log-info">
+                    <span class="log-uid">${data.uid}</span>
+                    <span class="log-time"><i class="fa-regular fa-clock"></i> ${timeStr}</span>
+                </div>
+                <div class="status-badge ${badgeClass}">
+                    <i class="fa-solid ${iconClass}"></i> ${statusText}
+                </div>
+            `;
+
+            // Add to top
+            list.insertBefore(li, list.firstChild);
+
+            // Limit to 10 entries
+            if (list.children.length > 10) {
+                list.removeChild(list.lastChild);
+            }
+        }
+
+        function updateControlState(id, isActive) {
+            const el = document.getElementById(id);
+            if (!el) return;
             if (isActive) el.classList.add('active');
             else el.classList.remove('active');
         }
 
-        function toggleDevice(device) {
+        function sendControl(command) {
             if (!client || !client.isConnected()) {
-                showToast("Connection Lost - Cannot Send Command", "error");
+                showToast("Offline: Cannot send command", "error");
                 return;
             }
 
-            const message = new Paho.MQTT.Message(device + "-toggle");
+            const message = new Paho.MQTT.Message(command);
             message.destinationName = TOPIC_CONTROL;
-            
-            try {
-                client.send(message);
-                console.log("📤 Sent Command:", device);
-                
-                // Immediate visual feedback (optimistic UI)
-                const card = document.getElementById(device + 'Control');
-                if(card) {
-                    card.style.transform = "scale(0.98)";
-                    setTimeout(() => card.style.transform = "scale(1)", 150);
-                }
-                
-                // Special handling for mode toggle text
-                if (device === 'mode') {
-                    showToast("Switching System Mode...", "success");
-                } else {
-                    showToast(`Toggling ${device}...`, "success");
-                }
-                
-            } catch (error) {
-                console.error("Send failed:", error);
-                showToast("Failed to send command", "error");
-            }
+            client.send(message);
+            console.log("Sent:", command);
         }
 
-        // --- UI Helper Functions ---
+        // --- UI Helpers ---
         function updateConnectionUI(state, text) {
             const container = document.getElementById('connectionStatus');
             const txt = document.getElementById('statusText');
             
-            container.className = ""; // clear classes
+            container.className = "";
             if (state === 'connected') container.classList.add('connected');
             else container.classList.add('disconnected');
             
@@ -660,20 +682,13 @@
 
             toast.className = `toast ${type}`;
             toastMsg.textContent = msg;
+            toastIcon.className = type === 'success' ? "fa-solid fa-circle-check" : "fa-solid fa-triangle-exclamation";
             
-            // Icon handling
-            if (type === 'success') toastIcon.className = "fa-solid fa-circle-check";
-            else toastIcon.className = "fa-solid fa-circle-exclamation";
-
             toast.classList.add('show');
-            
-            // Clear existing timeout if spamming buttons
             if (toast.timeoutId) clearTimeout(toast.timeoutId);
-            
-            toast.timeoutId = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            toast.timeoutId = setTimeout(() => toast.classList.remove('show'), 3000);
         }
     </script>
 </body>
 </html>
+```
