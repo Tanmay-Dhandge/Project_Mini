@@ -1,399 +1,679 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart Home Dashboard</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Control Center</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* ------------------------------------------------
-           RESET + BASE
-        --------------------------------------------------- */
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: var(--bg);
+            color: var(--text-main);
             min-height: 100vh;
-            padding: 25px;
-            color: #333;
+            padding: 20px;
         }
 
+        /* --- Header & Status --- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 15px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand i { color: var(--primary); }
+
+        .connection-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #e2e8f0;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+        }
+
+        .connected .connection-badge { background: #dcfce7; color: #166534; }
+        .connected .status-indicator { background-color: var(--success); box-shadow: 0 0 0 2px #dcfce7; }
+        
+        .disconnected .connection-badge { background: #fee2e2; color: #991b1b; }
+        .disconnected .status-indicator { background-color: var(--danger); animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* --- Layout Grid --- */
         .container {
             max-width: 1400px;
             margin: 0 auto;
-        }
-
-        /* ------------------------------------------------
-           HEADER
-        --------------------------------------------------- */
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: white;
-        }
-
-        .header h1 {
-            font-size: 2.6em;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .connection-status {
-            margin-top: 10px;
-            padding: 7px 18px;
-            display: inline-flex;
-            align-items: center;
-            background: rgba(255,255,255,0.18);
-            border-radius: 25px;
-            font-size: 0.9em;
-            backdrop-filter: blur(4px);
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: #f87171;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .status-connected {
-            background: #4ade80 !important;
-        }
-
-        /* ------------------------------------------------
-           GRID CARDS
-        --------------------------------------------------- */
-        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 22px;
-            margin-bottom: 35px;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
         }
 
-        .card {
-            background: white;
-            border-radius: 18px;
-            padding: 25px 22px;
-            min-height: 150px;
+        .section-title {
+            grid-column: span 12;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- Sensor Cards --- */
+        .sensor-card {
+            grid-column: span 12;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            transition: 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
         }
 
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+        .sensor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
         }
+
+        .sensor-card:hover { transform: translateY(-3px); }
+
+        @media (min-width: 640px) { .sensor-card { grid-column: span 6; } }
+        @media (min-width: 1024px) { .sensor-card { grid-column: span 4; } } /* 3 per row */
+        @media (min-width: 1280px) { .sensor-card { grid-column: span 2; } .sensor-card.wide { grid-column: span 4; } }
 
         .card-header {
             display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #eff6ff;
+            color: var(--primary);
+            display: flex;
             align-items: center;
-            gap: 14px;
+            justify-content: center;
+            font-size: 1.2rem;
         }
 
-        .card-icon {
-            font-size: 2.1em;
-        }
-
-        .card-title {
-            font-size: 1.15em;
+        .card-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
             font-weight: 600;
-            color: #555;
         }
 
-        .card-value {
-            font-size: 2.4em;
+        .metric-value {
+            font-size: 2.2rem;
             font-weight: 700;
-            color: #222;
+            color: var(--dark);
+            line-height: 1;
         }
 
-        .card-unit {
-            font-size: 0.9em;
-            color: #777;
+        .metric-unit {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-left: 4px;
         }
 
-        .card-temp { border-left: 5px solid #ef4444; }
-        .card-humidity { border-left: 5px solid #3b82f6; }
-        .card-pressure { border-left: 5px solid #8b5cf6; }
-        .card-light { border-left: 5px solid #f59e0b; }
-        .card-air { border-left: 5px solid #10b981; }
-
-        /* ------------------------------------------------
-           CONTROLS
-        --------------------------------------------------- */
-        .controls {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        .card-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
         }
 
-        .controls-title {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            font-weight: 700;
-            color: #333;
-        }
+        /* Color Variances */
+        .card-temp .icon-box { background: #fee2e2; color: var(--danger); }
+        .card-temp::before { background: var(--danger); }
+        
+        .card-humid .icon-box { background: #dbeafe; color: var(--primary); }
+        .card-humid::before { background: var(--primary); }
+        
+        .card-air .icon-box { background: #dcfce7; color: var(--success); }
+        .card-air::before { background: var(--success); }
+        
+        .card-light .icon-box { background: #fef3c7; color: var(--warning); }
+        .card-light::before { background: var(--warning); }
 
-        .control-grid {
+        /* --- Controls --- */
+        .control-panel {
+            grid-column: span 12;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
         }
 
         .control-item {
             background: #f8fafc;
-            padding: 15px 18px;
-            border-radius: 14px;
-            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            border-radius: 10px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            transition: 0.25s ease;
-            border: 1px solid transparent;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
         .control-item:hover {
+            border-color: #cbd5e1;
             background: #f1f5f9;
-            transform: translateY(-2px);
         }
 
-        .control-label {
-            font-size: 1.05em;
-            font-weight: 600;
-            color: #333;
+        .control-info {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
+        .control-info i {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        .control-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
         /* Toggle Switch */
-        .toggle-switch {
-            width: 58px;
-            height: 30px;
-            background: #cbd5e1;
-            border-radius: 30px;
+        .toggle {
             position: relative;
+            width: 50px;
+            height: 28px;
+            background: #cbd5e1;
+            border-radius: 14px;
             transition: 0.3s;
         }
 
-        .toggle-switch.active {
-            background: #10b981;
-        }
-
-        .toggle-slider {
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
+        .toggle::after {
+            content: '';
             position: absolute;
             top: 3px;
             left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
             transition: 0.3s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(28px);
-        }
+        .active .toggle { background: var(--success); }
+        .active .toggle::after { transform: translateX(22px); }
+        
+        .control-item.active .control-info i { color: var(--success); }
 
-        .mode-badge {
-            padding: 6px 12px;
-            border-radius: 14px;
-            background: #3b82f6;
-            color: white;
-            font-size: 0.85em;
-            font-weight: 700;
-        }
-        .mode-badge.manual {
-            background: #f59e0b;
-        }
+        /* Manual Mode Specifics */
+        .manual-mode .toggle { background: var(--warning); }
+        .manual-mode .control-info i { color: var(--warning); }
 
-        /* ------------------------------------------------
-           TIMESTAMP
-        --------------------------------------------------- */
-        .timestamp {
-            margin-top: 20px;
+        /* --- Footer --- */
+        .footer {
+            grid-column: span 12;
             text-align: center;
-            color: #fafafa;
-            opacity: 0.85;
-            font-size: 0.92em;
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
 
-        /* ------------------------------------------------
-           TOAST
-        --------------------------------------------------- */
-        .toast {
+        /* --- Toast Notification --- */
+        .toast-container {
             position: fixed;
-            bottom: 28px;
-            right: 28px;
-            background: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            display: none;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: var(--dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 25px rgba(0,0,0,0.25);
-            animation: slide 0.3s ease;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        .toast.show {
-            display: flex;
-        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
 
-        .toast.success { border-left: 4px solid #10b981; }
-        .toast.error { border-left: 4px solid #ef4444; }
-
-        @keyframes slide {
-            from { transform: translateX(120px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* ------------------------------------------------
-           RESPONSIVE
-        --------------------------------------------------- */
-        @media (max-width: 768px) {
-            .header h1 { font-size: 2em; }
-            .card-value { font-size: 2em; }
-            .controls { padding: 22px; }
-            body { padding: 15px; }
-            .toast { left: 15px; right: 15px; }
-        }
     </style>
 </head>
+<body id="appBody">
 
-<body>
-    <div class="container">
-
-        <!-- HEADER -->
-        <div class="header">
-            <h1>🏠 Smart Home Dashboard</h1>
-            <div class="connection-status">
-                <span class="status-dot" id="statusDot"></span>
+    <nav class="navbar">
+        <div class="brand">
+            <i class="fa-solid fa-house-signal"></i>
+            Smart Home
+        </div>
+        <div id="connectionStatus" class="disconnected">
+            <div class="connection-badge">
+                <div class="status-indicator"></div>
                 <span id="statusText">Connecting...</span>
             </div>
         </div>
+    </nav>
 
-        <!-- ERROR MSG -->
-        <div id="errorMsg" style="
-            display:none;
-            background:#fee2e2;
-            padding:12px;
-            border-radius:10px;
-            text-align:center;
-            margin-bottom:20px;
-            color:#991b1b;
-            font-weight:600;">
+    <div class="container">
+        
+        <div class="section-title">Environmental Monitoring</div>
+
+        <div class="sensor-card card-temp">
+            <div class="card-header">
+                <span class="card-label">Temperature</span>
+                <div class="icon-box"><i class="fa-solid fa-temperature-half"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="temp">--</span><span class="metric-unit">°C</span>
+            </div>
+            <div class="card-footer">
+                <span>DHT: <b id="dht-temp">--</b>°C</span>
+                <span>BMP: <b id="bmp-temp">--</b>°C</span>
+            </div>
         </div>
 
-        <!-- SENSOR GRID -->
-        <div class="grid">
-
-            <div class="card card-temp">
-                <div class="card-header">
-                    <div class="card-icon">🌡️</div>
-                    <div class="card-title">Temperature</div>
-                </div>
-                <div class="card-value" id="temp">--</div>
-                <div class="card-unit">
-                    DHT: <span id="dht-temp">--</span>°C |
-                    BMP: <span id="bmp-temp">--</span>°C
-                </div>
+        <div class="sensor-card card-humid">
+            <div class="card-header">
+                <span class="card-label">Humidity</span>
+                <div class="icon-box"><i class="fa-solid fa-droplet"></i></div>
             </div>
-
-            <div class="card card-humidity">
-                <div class="card-header">
-                    <div class="card-icon">💧</div>
-                    <div class="card-title">Humidity</div>
-                </div>
-                <div class="card-value" id="humidity">--</div>
-                <div class="card-unit">Relative Humidity</div>
+            <div>
+                <span class="metric-value" id="humidity">--</span><span class="metric-unit">%</span>
             </div>
-
-            <div class="card card-pressure">
-                <div class="card-header">
-                    <div class="card-icon">🌪️</div>
-                    <div class="card-title">Pressure</div>
-                </div>
-                <div class="card-value" id="pressure">--</div>
-                <div class="card-unit">hPa</div>
+            <div class="card-footer">
+                <span>Relative Humidity</span>
             </div>
-
-            <div class="card card-light">
-                <div class="card-header">
-                    <div class="card-icon">☀️</div>
-                    <div class="card-title">Light Level</div>
-                </div>
-                <div class="card-value" id="light">--</div>
-                <div class="card-unit">Light Intensity</div>
-            </div>
-
-            <div class="card card-air">
-                <div class="card-header">
-                    <div class="card-icon">🌬️</div>
-                    <div class="card-title">Air Quality</div>
-                </div>
-                <div class="card-value" id="airquality">--</div>
-                <div class="card-unit">MQ135 Sensor (PPM)</div>
-            </div>
-
         </div>
 
-        <!-- CONTROLS -->
-        <div class="controls">
-            <div class="controls-title">⚡ Device Controls</div>
+        <div class="sensor-card">
+            <div class="card-header">
+                <span class="card-label">Atmospheric Pressure</span>
+                <div class="icon-box"><i class="fa-solid fa-gauge-high"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="pressure">--</span><span class="metric-unit">hPa</span>
+            </div>
+            <div class="card-footer">
+                <span>Barometric Sensor</span>
+            </div>
+        </div>
 
-            <div class="control-grid">
-                <div class="control-item" onclick="toggleDevice('fan')">
-                    <div class="control-label"><span>🌀</span>Fan</div>
-                    <div class="toggle-switch" id="fanToggle"><div class="toggle-slider"></div></div>
+        <div class="sensor-card card-light">
+            <div class="card-header">
+                <span class="card-label">Light Intensity</span>
+                <div class="icon-box"><i class="fa-solid fa-sun"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="light">--</span><span class="metric-unit">%</span>
+            </div>
+            <div class="card-footer">
+                <span>Ambient Sensor</span>
+            </div>
+        </div>
+
+        <div class="sensor-card card-air wide">
+            <div class="card-header">
+                <span class="card-label">Air Quality Index</span>
+                <div class="icon-box"><i class="fa-solid fa-wind"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="airquality">--</span><span class="metric-unit">PPM</span>
+            </div>
+            <div class="card-footer">
+                <span>MQ135 Gas Sensor</span>
+                <span id="airStatus">Normal</span>
+            </div>
+        </div>
+
+        <div class="section-title">Device Control Center</div>
+
+        <div class="control-panel">
+            
+            <div class="control-item" id="fanControl" onclick="toggleDevice('fan')">
+                <div class="control-info">
+                    <i class="fa-solid fa-fan"></i>
+                    <span class="control-name">Ventilation Fan</span>
                 </div>
+                <div class="toggle"></div>
+            </div>
 
-                <div class="control-item" onclick="toggleDevice('light')">
-                    <div class="control-label"><span>💡</span>Light</div>
-                    <div class="toggle-switch" id="lightToggle"><div class="toggle-slider"></div></div>
+            <div class="control-item" id="lightControl" onclick="toggleDevice('light')">
+                <div class="control-info">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span class="control-name">Main Lights</span>
                 </div>
+                <div class="toggle"></div>
+            </div>
 
-                <div class="control-item" onclick="toggleDevice('door')">
-                    <div class="control-label"><span>🚪</span>Door</div>
-                    <div class="toggle-switch" id="doorToggle"><div class="toggle-slider"></div></div>
+            <div class="control-item" id="doorControl" onclick="toggleDevice('door')">
+                <div class="control-info">
+                    <i class="fa-solid fa-door-open"></i>
+                    <span class="control-name">Door Lock</span>
                 </div>
+                <div class="toggle"></div>
+            </div>
 
-                <div class="control-item" onclick="toggleDevice('mode')">
-                    <div class="control-label">
-                        <span>🔄</span>Mode:
-                        <span class="mode-badge" id="modeBadge">Auto</span>
+            <div class="control-item" id="modeControl" onclick="toggleDevice('mode')">
+                <div class="control-info">
+                    <i class="fa-solid fa-robot"></i>
+                    <div>
+                        <span class="control-name">System Mode</span>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="modeText">Auto</div>
                     </div>
-                    <div class="toggle-switch" id="modeToggle"><div class="toggle-slider"></div></div>
                 </div>
+                <div class="toggle"></div>
             </div>
+
         </div>
 
-        <!-- TIMESTAMP -->
-        <div class="timestamp">
-            Last Updated: <span id="timestamp">Never</span>
+        <div class="footer">
+            <p>Last Data Update: <span id="timestamp">Waiting for data...</span></p>
+        </div>
+
+    </div>
+
+    <div class="toast-container">
+        <div id="toast" class="toast">
+            <i id="toastIcon" class="fa-solid fa-circle-check"></i>
+            <span id="toastMessage">Connected successfully</span>
         </div>
     </div>
 
-    <!-- TOAST -->
-    <div class="toast" id="toast">
-        <span id="toastIcon">✓</span>
-        <span id="toastMessage">Action Successful</span>
-    </div>
-
-    <!-- MQTT LOGIC (Your original JS kept as-is) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <script>
-        /* Your existing MQTT code here - unchanged */
-    </script>
+        // --- Configuration ---
+        const MQTT_SERVER = "afc8a0ac2ccf462c8f92b932403518df.s1.eu.hivemq.cloud";
+        const MQTT_PORT = 8884;
+        const MQTT_USER = "hivemq.webclient.1761751067946";
+        const MQTT_PASS = "wy.b7f8cB*0GTUW&4Ha:";
+        
+        const TOPIC_SENSORS = "project/sensors";
+        const TOPIC_STATUS = "project/status";
+        const TOPIC_CONTROL = "project/control";
 
+        let client;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+
+        // --- Initialization ---
+        window.addEventListener('load', () => {
+            connectMQTT();
+        });
+
+        // --- MQTT Logic ---
+        function connectMQTT() {
+            const clientId = "web-client-" + Math.random().toString(16).substr(2, 8);
+            client = new Paho.MQTT.Client(MQTT_SERVER, MQTT_PORT, clientId);
+
+            client.onConnectionLost = onConnectionLost;
+            client.onMessageArrived = onMessageArrived;
+
+            const options = {
+                useSSL: true,
+                userName: MQTT_USER,
+                password: MQTT_PASS,
+                onSuccess: onConnect,
+                onFailure: onFailure,
+                keepAliveInterval: 30
+            };
+
+            updateConnectionUI("connecting", "Connecting to Server...");
+            client.connect(options);
+        }
+
+        function onConnect() {
+            console.log("✅ MQTT Connected");
+            updateConnectionUI("connected", "Live Connection");
+            reconnectAttempts = 0;
+            
+            client.subscribe(TOPIC_SENSORS);
+            client.subscribe(TOPIC_STATUS);
+            
+            showToast("System Connected", "success");
+        }
+
+        function onFailure(error) {
+            console.error("❌ Connection failed:", error.errorMessage);
+            updateConnectionUI("disconnected", "Connection Failed");
+            
+            reconnectAttempts++;
+            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                setTimeout(connectMQTT, 5000);
+            } else {
+                showToast("Max reconnect attempts reached. Refresh page.", "error");
+            }
+        }
+
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.warn("⚠️ Connection Lost:", responseObject.errorMessage);
+                updateConnectionUI("disconnected", "Reconnecting...");
+                setTimeout(connectMQTT, 3000);
+            }
+        }
+
+        function onMessageArrived(message) {
+            // console.log("📩 Data:", message.payloadString);
+            try {
+                const data = JSON.parse(message.payloadString);
+                updateDashboard(data);
+            } catch (e) {
+                console.error("JSON Parse Error:", e);
+            }
+        }
+
+        // --- Dashboard Logic ---
+        function updateDashboard(data) {
+            // Helper to set text content safely
+            const setTxt = (id, val) => {
+                const el = document.getElementById(id);
+                if(el) el.textContent = val;
+            };
+
+            // Temperature
+            if (data.dht_temp) {
+                setTxt('dht-temp', data.dht_temp.toFixed(1));
+                setTxt('temp', data.dht_temp.toFixed(1));
+            }
+            if (data.bmp_temp) setTxt('bmp-temp', data.bmp_temp.toFixed(1));
+
+            // Humidity & Pressure
+            if (data.dht_humidity) setTxt('humidity', data.dht_humidity.toFixed(1));
+            if (data.pressure_hpa) setTxt('pressure', data.pressure_hpa.toFixed(1));
+
+            // Light
+            if (data.lightPercent !== undefined) setTxt('light', data.lightPercent.toFixed(0));
+
+            // Air Quality
+            if (data.mq135 !== undefined) {
+                setTxt('airquality', data.mq135);
+                // Dynamic feedback for air quality
+                const statusEl = document.getElementById('airStatus');
+                if(data.mq135 > 1000) {
+                    statusEl.textContent = "Poor Quality";
+                    statusEl.style.color = "var(--danger)";
+                } else {
+                    statusEl.textContent = "Good Quality";
+                    statusEl.style.color = "var(--success)";
+                }
+            }
+
+            // Controls Visualization
+            updateControlState('fanControl', data.fan);
+            updateControlState('lightControl', data.light);
+            updateControlState('doorControl', data.door);
+
+            // Special handling for Mode
+            if (data.mode !== undefined) {
+                const isManual = data.mode === "Manual";
+                const modeEl = document.getElementById('modeControl');
+                const modeText = document.getElementById('modeText');
+                
+                if (isManual) {
+                    modeEl.classList.add('active', 'manual-mode');
+                    modeText.textContent = "Manual Override";
+                } else {
+                    modeEl.classList.remove('active', 'manual-mode');
+                    modeText.textContent = "Automatic Control";
+                }
+            }
+
+            // Timestamp
+            const now = new Date();
+            setTxt('timestamp', now.toLocaleTimeString());
+        }
+
+        function updateControlState(elementId, isActive) {
+            if (isActive === undefined) return;
+            const el = document.getElementById(elementId);
+            if (isActive) el.classList.add('active');
+            else el.classList.remove('active');
+        }
+
+        function toggleDevice(device) {
+            if (!client || !client.isConnected()) {
+                showToast("Connection Lost - Cannot Send Command", "error");
+                return;
+            }
+
+            const message = new Paho.MQTT.Message(device + "-toggle");
+            message.destinationName = TOPIC_CONTROL;
+            
+            try {
+                client.send(message);
+                console.log("📤 Sent Command:", device);
+                
+                // Immediate visual feedback (optimistic UI)
+                const card = document.getElementById(device + 'Control');
+                if(card) {
+                    card.style.transform = "scale(0.98)";
+                    setTimeout(() => card.style.transform = "scale(1)", 150);
+                }
+                
+                // Special handling for mode toggle text
+                if (device === 'mode') {
+                    showToast("Switching System Mode...", "success");
+                } else {
+                    showToast(`Toggling ${device}...`, "success");
+                }
+                
+            } catch (error) {
+                console.error("Send failed:", error);
+                showToast("Failed to send command", "error");
+            }
+        }
+
+        // --- UI Helper Functions ---
+        function updateConnectionUI(state, text) {
+            const container = document.getElementById('connectionStatus');
+            const txt = document.getElementById('statusText');
+            
+            container.className = ""; // clear classes
+            if (state === 'connected') container.classList.add('connected');
+            else container.classList.add('disconnected');
+            
+            txt.textContent = text;
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toast.className = `toast ${type}`;
+            toastMsg.textContent = msg;
+            
+            // Icon handling
+            if (type === 'success') toastIcon.className = "fa-solid fa-circle-check";
+            else toastIcon.className = "fa-solid fa-circle-exclamation";
+
+            toast.classList.add('show');
+            
+            // Clear existing timeout if spamming buttons
+            if (toast.timeoutId) clearTimeout(toast.timeoutId);
+            
+            toast.timeoutId = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
