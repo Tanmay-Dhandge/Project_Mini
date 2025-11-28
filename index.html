@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Home & Security Dashboard</title>
+    <title>Smart Home Dashboard</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -19,7 +19,7 @@
             --text-muted: #64748b;
             --bg: #f1f5f9;
             --card-bg: #ffffff;
-            --border-radius: 12px;
+            --border-radius: 16px;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
@@ -37,7 +37,7 @@
             padding: 20px;
         }
 
-        /* --- Header & Status --- */
+        /* --- Navigation --- */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -53,21 +53,21 @@
         }
 
         .brand {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--dark);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .brand i { color: var(--primary); }
+        .brand i { color: var(--primary); font-size: 1.2rem; }
 
         .connection-badge {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 12px;
+            padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 600;
@@ -85,45 +85,45 @@
 
         .connected .connection-badge { background: #dcfce7; color: #166534; }
         .connected .status-indicator { background-color: var(--success); box-shadow: 0 0 0 2px #dcfce7; }
-        
         .disconnected .connection-badge { background: #fee2e2; color: #991b1b; }
         .disconnected .status-indicator { background-color: var(--danger); animation: pulse 1.5s infinite; }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* --- Layout Grid --- */
-        .container {
+        /* --- Main Grid Layout --- */
+        .main-wrapper {
             max-width: 1400px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 24px;
         }
 
-        .section-title {
-            grid-column: span 12;
-            font-size: 0.9rem;
+        .section-header {
+            font-size: 0.95rem;
             color: var(--text-muted);
             font-weight: 700;
-            margin-top: 10px;
-            margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin: 30px 0 15px 5px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-
-        .section-title::after {
+        
+        .section-header::after {
             content: '';
-            flex: 1;
             height: 1px;
             background: #e2e8f0;
+            flex: 1;
         }
 
-        /* --- Cards --- */
-        .sensor-card {
-            grid-column: span 12;
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            align-items: stretch; /* Stretches cards to same height */
+        }
+
+        /* --- Unified Card Styles --- */
+        .card {
             background: var(--card-bg);
             border-radius: var(--border-radius);
             padding: 24px;
@@ -133,208 +133,155 @@
             justify-content: space-between;
             position: relative;
             overflow: hidden;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 200px; /* Enforce minimum height for consistency */
+            border: 1px solid transparent;
         }
 
-        .sensor-card::before {
+        .card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 4px;
             height: 100%;
-            background: var(--primary);
         }
 
-        .sensor-card:hover { transform: translateY(-3px); }
-
-        /* Responsive Columns for Sensors */
-        /* Tablet: 2 per row */
-        @media (min-width: 640px) { .sensor-card { grid-column: span 6; } }
-        /* Desktop: 4 per row (Fits Temp, Humid, Light, Pressure nicely) */
-        @media (min-width: 1024px) { .sensor-card { grid-column: span 3; } } 
-        /* For 5 items (Air Quality wraps), or we can do a different span logic */
-        
-        /* Specific sizing for Air Quality if we want it to span wider on last row */
-        @media (min-width: 1024px) { 
-            .card-air { grid-column: span 12; } /* Full width bottom bar for Air Quality */
-        }
-        @media (min-width: 1280px) { 
-            .sensor-card { grid-column: span 2; } /* 5 items fit roughly? No 12/5 is hard. Let's keep grid simple */
-            .sensor-card { grid-column: span 3; } /* 4 per row */
-            .card-air { grid-column: span 12; } /* Air Quality full width */
-        }
-
-        /* RFID and Log Logic */
-        .card-rfid { grid-column: span 12; }
-        @media (min-width: 1024px) { .card-rfid { grid-column: span 4; } }
-
-        .log-panel {
-            grid-column: span 12;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            max-height: 400px;
-        }
-        @media (min-width: 1024px) { .log-panel { grid-column: span 8; } }
-
-        .card-header {
+        /* Card Header Section */
+        .card-top {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 15px;
         }
 
-        .icon-box {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: #eff6ff;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .card-label {
+        .card-title {
             font-size: 0.9rem;
             color: var(--text-muted);
             font-weight: 600;
         }
 
-        .metric-value {
-            font-size: 2.2rem;
+        .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        /* Card Body Section */
+        .card-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .value-display {
+            font-size: 2.5rem;
             font-weight: 700;
             color: var(--dark);
             line-height: 1;
         }
 
-        .metric-unit {
+        .unit-display {
             font-size: 1rem;
-            font-weight: 500;
             color: var(--text-muted);
+            font-weight: 500;
             margin-left: 4px;
         }
 
-        /* Card Colors */
-        .card-rfid .icon-box { background: #f3e8ff; color: #7e22ce; }
-        .card-rfid::before { background: #7e22ce; }
-        
-        .card-temp .icon-box { background: #fee2e2; color: var(--danger); }
-        .card-temp::before { background: var(--danger); }
-        
-        .card-humid .icon-box { background: #dbeafe; color: var(--primary); }
-        .card-humid::before { background: var(--primary); }
-
-        .card-light .icon-box { background: #fef3c7; color: var(--warning); }
-        .card-light::before { background: var(--warning); }
-
-        .card-pressure .icon-box { background: #ede9fe; color: var(--purple); }
-        .card-pressure::before { background: var(--purple); }
-
-        .card-air .icon-box { background: #dcfce7; color: var(--success); }
-        .card-air::before { background: var(--success); }
-
-        /* --- Log Styling --- */
-        .log-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid #e2e8f0;
-            font-weight: 600;
-            color: var(--dark);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .sub-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 8px;
         }
 
+        /* --- Color Variants --- */
+        /* Temp */
+        .type-temp::before { background: var(--danger); }
+        .type-temp .card-icon { background: #fee2e2; color: var(--danger); }
+        
+        /* Humid */
+        .type-humid::before { background: var(--primary); }
+        .type-humid .card-icon { background: #dbeafe; color: var(--primary); }
+        
+        /* Pressure */
+        .type-pressure::before { background: var(--purple); }
+        .type-pressure .card-icon { background: #f3e8ff; color: var(--purple); }
+        
+        /* Light */
+        .type-light::before { background: var(--warning); }
+        .type-light .card-icon { background: #fef3c7; color: var(--warning); }
+        
+        /* Air */
+        .type-air::before { background: var(--success); }
+        .type-air .card-icon { background: #dcfce7; color: var(--success); }
+        
+        /* RFID */
+        .type-rfid::before { background: var(--dark); }
+        .type-rfid .card-icon { background: #f1f5f9; color: var(--dark); }
+
+        /* Controls */
+        .type-control::before { background: #64748b; }
+        .type-control .card-icon { background: #f1f5f9; color: #64748b; }
+        .type-control.active::before { background: var(--success); }
+        .type-control.active .card-icon { background: #dcfce7; color: var(--success); }
+        .type-control.active { border-color: #bbf7d0; background: #f0fdf4; }
+
+        /* --- Special Log Card --- */
         .log-list {
-            overflow-y: auto;
-            padding: 0;
-            margin: 0;
             list-style: none;
-            height: 300px;
+            overflow-y: auto;
+            max-height: 120px; /* Limits height to match other cards */
+            margin-top: 10px;
+            padding-right: 5px;
         }
+
+        /* Custom Scrollbar for Log */
+        .log-list::-webkit-scrollbar { width: 4px; }
+        .log-list::-webkit-scrollbar-track { background: #f1f5f9; }
+        .log-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
         .log-item {
-            padding: 15px 24px;
+            font-size: 0.8rem;
+            padding: 8px 0;
             border-bottom: 1px solid #f1f5f9;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            animation: slideIn 0.3s ease;
         }
-        
-        .log-info { display: flex; flex-direction: column; gap: 4px; }
-        .log-uid { font-family: monospace; font-weight: 600; font-size: 1.1em; color: var(--dark); }
-        .log-time { font-size: 0.8rem; color: var(--text-muted); }
+        .log-item:first-child { padding-top: 0; }
+        .log-success { color: var(--success); font-weight: 600; }
+        .log-fail { color: var(--danger); font-weight: 600; }
 
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        /* --- Toggle Switch --- */
+        .toggle-wrapper {
+            margin-top: 15px;
             display: flex;
-            align-items: center;
-            gap: 6px;
+            justify-content: flex-end;
         }
 
-        .badge-success { background: #dcfce7; color: #166534; }
-        .badge-danger { background: #fee2e2; color: #991b1b; }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* --- Controls --- */
-        .control-panel {
-            grid-column: span 12;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-        }
-
-        .control-item {
-            background: var(--card-bg);
-            box-shadow: var(--shadow);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .control-item:hover { transform: translateY(-2px); border-color: #e2e8f0; }
-        .control-item.active { border-color: var(--success); background: #f0fdf4; }
-
-        .control-info { display: flex; align-items: center; gap: 15px; }
-        .control-icon { 
-            width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; 
-            display: flex; alignItems: center; justify-content: center; color: var(--text-muted);
-        }
-        .control-item.active .control-icon { background: var(--success); color: white; }
-
-        /* Toggle Switch */
         .toggle {
             position: relative;
-            width: 48px;
-            height: 26px;
+            width: 50px;
+            height: 28px;
             background: #cbd5e1;
-            border-radius: 13px;
+            border-radius: 14px;
+            cursor: pointer;
             transition: 0.3s;
         }
-
         .toggle::after {
             content: '';
             position: absolute;
-            top: 3px;
-            left: 3px;
+            top: 4px;
+            left: 4px;
             width: 20px;
             height: 20px;
             background: white;
@@ -342,18 +289,36 @@
             transition: 0.3s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-
         .active .toggle { background: var(--success); }
         .active .toggle::after { transform: translateX(22px); }
 
-        /* --- Toast Notification --- */
+        /* Gate Buttons */
+        .gate-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            border: 1px solid #e2e8f0;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: 0.2s;
+        }
+        .btn:hover { background: #f8fafc; }
+        .btn:active { transform: scale(0.95); }
+
+        /* --- Toast --- */
         .toast-container {
             position: fixed;
             bottom: 24px;
             right: 24px;
             z-index: 1000;
         }
-
         .toast {
             background: var(--dark);
             color: white;
@@ -365,21 +330,19 @@
             gap: 10px;
             transform: translateY(100px);
             opacity: 0;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transition: all 0.3s;
         }
-
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success { border-left: 4px solid var(--success); }
         .toast.error { border-left: 4px solid var(--danger); }
-
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <div class="brand">
-            <i class="fa-solid fa-layer-group"></i>
-            IoT Dashboard
+            <i class="fa-solid fa-cube"></i>
+            <span>Smart Dashboard</span>
         </div>
         <div id="connectionStatus" class="disconnected">
             <div class="connection-badge">
@@ -389,119 +352,147 @@
         </div>
     </nav>
 
-    <div class="container">
+    <div class="main-wrapper">
         
-        <div class="section-title">Environmental Data</div>
-
-        <div class="sensor-card card-temp">
-            <div class="card-header">
-                <span class="card-label">Temperature</span>
-                <div class="icon-box"><i class="fa-solid fa-temperature-half"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="temp">--</span><span class="metric-unit">°C</span>
-            </div>
-        </div>
-
-        <div class="sensor-card card-humid">
-            <div class="card-header">
-                <span class="card-label">Humidity</span>
-                <div class="icon-box"><i class="fa-solid fa-droplet"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="humidity">--</span><span class="metric-unit">%</span>
-            </div>
-        </div>
-
-        <div class="sensor-card card-light">
-            <div class="card-header">
-                <span class="card-label">Light Intensity</span>
-                <div class="icon-box"><i class="fa-solid fa-sun"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="light">--</span><span class="metric-unit">%</span>
-            </div>
-        </div>
-
-        <div class="sensor-card card-pressure">
-            <div class="card-header">
-                <span class="card-label">Atm. Pressure</span>
-                <div class="icon-box"><i class="fa-solid fa-gauge-high"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="pressure">--</span><span class="metric-unit">hPa</span>
-            </div>
-        </div>
-
-        <div class="sensor-card card-air">
-            <div class="card-header">
-                <span class="card-label">Air Quality Index</span>
-                <div class="icon-box"><i class="fa-solid fa-wind"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="airquality">--</span><span class="metric-unit">PPM</span>
-            </div>
-        </div>
-
-
-        <div class="section-title">Security & Access Control</div>
-
-        <div class="sensor-card card-rfid">
-            <div class="card-header">
-                <span class="card-label">RFID Scanner</span>
-                <div class="icon-box"><i class="fa-solid fa-id-card"></i></div>
-            </div>
-            <div>
-                <span class="metric-value" id="rfidUid" style="font-size: 1.5rem; font-family: monospace;">--:--:--:--</span>
-            </div>
-            <div class="card-footer" style="margin-top: 15px; font-size: 0.9rem;">
-                <span id="rfidStatus" style="color: var(--text-muted);">Waiting for card...</span>
-            </div>
-        </div>
-
-        <div class="log-panel">
-            <div class="log-header">
-                <span><i class="fa-solid fa-list-check" style="margin-right: 8px;"></i> Access History</span>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Last 10 Entries</span>
-            </div>
-            <ul class="log-list" id="accessLog">
-                <li style="padding: 20px; text-align: center; color: var(--text-muted);">No access attempts recorded yet.</li>
-            </ul>
-        </div>
-
-
-        <div class="section-title">Device Controls</div>
-
-        <div class="control-panel">
-            <div class="control-item" id="gateControl">
-                <div class="control-info">
-                    <div class="control-icon"><i class="fa-solid fa-door-open"></i></div>
+        <div class="section-header">Live Environment</div>
+        <div class="grid-container">
+            
+            <div class="card type-temp">
+                <div class="card-top">
+                    <span class="card-title">Temperature</span>
+                    <div class="card-icon"><i class="fa-solid fa-temperature-half"></i></div>
+                </div>
+                <div class="card-body">
                     <div>
-                        <div style="font-weight: 600;">Main Gate</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);" id="gateStatusText">Closed</div>
+                        <span class="value-display" id="temp">--</span>
+                        <span class="unit-display">°C</span>
+                    </div>
+                    <div class="sub-text">Indoor Sensor</div>
+                </div>
+            </div>
+
+            <div class="card type-humid">
+                <div class="card-top">
+                    <span class="card-title">Humidity</span>
+                    <div class="card-icon"><i class="fa-solid fa-droplet"></i></div>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <span class="value-display" id="humidity">--</span>
+                        <span class="unit-display">%</span>
+                    </div>
+                    <div class="sub-text">Relative Humidity</div>
+                </div>
+            </div>
+
+            <div class="card type-pressure">
+                <div class="card-top">
+                    <span class="card-title">Pressure</span>
+                    <div class="card-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <span class="value-display" id="pressure">--</span>
+                        <span class="unit-display">hPa</span>
+                    </div>
+                    <div class="sub-text">Atmospheric</div>
+                </div>
+            </div>
+
+            <div class="card type-light">
+                <div class="card-top">
+                    <span class="card-title">Brightness</span>
+                    <div class="card-icon"><i class="fa-solid fa-sun"></i></div>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <span class="value-display" id="light">--</span>
+                        <span class="unit-display">%</span>
+                    </div>
+                    <div class="sub-text">Ambient Light</div>
+                </div>
+            </div>
+
+            <div class="card type-air">
+                <div class="card-top">
+                    <span class="card-title">Air Quality</span>
+                    <div class="card-icon"><i class="fa-solid fa-wind"></i></div>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <span class="value-display" id="airquality">--</span>
+                        <span class="unit-display">PPM</span>
+                    </div>
+                    <div class="sub-text" id="airStatus">Analyzing...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section-header">Control & Security</div>
+        <div class="grid-container">
+
+            <div class="card type-control" id="gateControl">
+                <div class="card-top">
+                    <span class="card-title">Main Gate</span>
+                    <div class="card-icon"><i class="fa-solid fa-dungeon"></i></div>
+                </div>
+                <div class="card-body">
+                    <div style="font-weight: 700; font-size: 1.2rem;" id="gateStatusText">Closed</div>
+                    <div class="gate-btns">
+                        <button class="btn" onclick="sendControl('gate-open')">OPEN</button>
+                        <button class="btn" onclick="sendControl('gate-close')">CLOSE</button>
                     </div>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button onclick="sendControl('gate-open')" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer;">Open</button>
-                    <button onclick="sendControl('gate-close')" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer;">Close</button>
+            </div>
+
+            <div class="card type-control" id="fanControl" onclick="sendControl('fan-toggle')">
+                <div class="card-top">
+                    <span class="card-title">Fan Control</span>
+                    <div class="card-icon"><i class="fa-solid fa-fan"></i></div>
+                </div>
+                <div class="card-body">
+                    <div style="font-weight: 700; font-size: 1.2rem;">Ventilation</div>
+                    <div class="toggle-wrapper">
+                        <div class="toggle"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="control-item" id="fanControl" onclick="sendControl('fan-toggle')">
-                <div class="control-info">
-                    <div class="control-icon"><i class="fa-solid fa-fan"></i></div>
-                    <span style="font-weight: 600;">Fan</span>
+            <div class="card type-control" id="lightControl" onclick="sendControl('light-toggle')">
+                <div class="card-top">
+                    <span class="card-title">Light Control</span>
+                    <div class="card-icon"><i class="fa-solid fa-lightbulb"></i></div>
                 </div>
-                <div class="toggle"></div>
+                <div class="card-body">
+                    <div style="font-weight: 700; font-size: 1.2rem;">Main Light</div>
+                    <div class="toggle-wrapper">
+                        <div class="toggle"></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="control-item" id="lightControl" onclick="sendControl('light-toggle')">
-                <div class="control-info">
-                    <div class="control-icon"><i class="fa-solid fa-lightbulb"></i></div>
-                    <span style="font-weight: 600;">Light</span>
+            <div class="card type-rfid">
+                <div class="card-top">
+                    <span class="card-title">RFID Scanner</span>
+                    <div class="card-icon"><i class="fa-solid fa-id-card"></i></div>
                 </div>
-                <div class="toggle"></div>
+                <div class="card-body">
+                    <div style="font-family: monospace; font-size: 1.4rem; font-weight: 700;" id="rfidUid">--:--:--</div>
+                    <div class="sub-text" id="rfidStatus">Ready to scan</div>
+                </div>
             </div>
+
+            <div class="card">
+                <div class="card-top" style="margin-bottom: 5px;">
+                    <span class="card-title">Access Log</span>
+                    <div class="card-icon" style="background:#f1f5f9; color:#64748b;"><i class="fa-solid fa-list"></i></div>
+                </div>
+                <ul class="log-list" id="accessLog">
+                    <li style="color: #94a3b8; text-align: center; padding-top: 20px;">No recent activity</li>
+                </ul>
+            </div>
+
         </div>
 
     </div>
@@ -515,7 +506,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <script>
-        // --- Configuration ---
         const MQTT_SERVER = "afc8a0ac2ccf462c8f92b932403518df.s1.eu.hivemq.cloud";
         const MQTT_PORT = 8884;
         const MQTT_USER = "hivemq.webclient.1761751067946";
@@ -527,18 +517,12 @@
         const TOPIC_RFID = "project/rfid";
 
         let client;
-        let reconnectAttempts = 0;
 
-        // --- Initialization ---
-        window.addEventListener('load', () => {
-            connectMQTT();
-        });
+        window.addEventListener('load', connectMQTT);
 
-        // --- MQTT Logic ---
         function connectMQTT() {
-            const clientId = "web-client-" + Math.random().toString(16).substr(2, 8);
+            const clientId = "web-" + Math.random().toString(16).substr(2, 8);
             client = new Paho.MQTT.Client(MQTT_SERVER, MQTT_PORT, clientId);
-
             client.onConnectionLost = onConnectionLost;
             client.onMessageArrived = onMessageArrived;
 
@@ -550,191 +534,133 @@
                 onFailure: onFailure,
                 keepAliveInterval: 30
             };
-
             updateConnectionUI("connecting", "Connecting...");
             client.connect(options);
         }
 
         function onConnect() {
             console.log("✅ MQTT Connected");
-            updateConnectionUI("connected", "System Online");
-            reconnectAttempts = 0;
-            
+            updateConnectionUI("connected", "Online");
             client.subscribe(TOPIC_SENSORS);
             client.subscribe(TOPIC_STATUS);
             client.subscribe(TOPIC_RFID);
-            
-            showToast("Connected Successfully", "success");
+            showToast("System Connected", "success");
         }
 
-        function onFailure(error) {
-            console.error("❌ Connection failed:", error.errorMessage);
-            updateConnectionUI("disconnected", "Connection Failed");
+        function onFailure(e) {
+            console.error(e);
+            updateConnectionUI("disconnected", "Failed");
             setTimeout(connectMQTT, 5000);
         }
 
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                console.warn("⚠️ Connection Lost");
+        function onConnectionLost(response) {
+            if (response.errorCode !== 0) {
                 updateConnectionUI("disconnected", "Reconnecting...");
                 setTimeout(connectMQTT, 3000);
             }
         }
 
-        function onMessageArrived(message) {
+        function onMessageArrived(msg) {
             try {
-                const data = JSON.parse(message.payloadString);
-                
-                if (message.destinationName === TOPIC_RFID) {
-                    handleRfidScan(data);
-                } else {
-                    updateDashboard(data);
-                }
-            } catch (e) {
-                console.error("JSON Parse Error:", e);
-            }
+                const data = JSON.parse(msg.payloadString);
+                if (msg.destinationName === TOPIC_RFID) handleRfidScan(data);
+                else updateDashboard(data);
+            } catch (e) { console.error(e); }
         }
 
-        // --- Dashboard Update Logic ---
         function updateDashboard(data) {
-            // Environment Data
+            // Sensors
             if (data.dht_temp) document.getElementById('temp').textContent = data.dht_temp.toFixed(1);
             if (data.dht_humidity) document.getElementById('humidity').textContent = data.dht_humidity.toFixed(1);
+            if (data.pressure_hpa) document.getElementById('pressure').textContent = data.pressure_hpa.toFixed(1);
             if (data.lightPercent !== undefined) document.getElementById('light').textContent = data.lightPercent.toFixed(0);
-            if (data.pressure_hpa !== undefined) document.getElementById('pressure').textContent = data.pressure_hpa.toFixed(1);
-            if (data.mq135 !== undefined) document.getElementById('airquality').textContent = data.mq135;
+            
+            if (data.mq135 !== undefined) {
+                document.getElementById('airquality').textContent = data.mq135;
+                const status = data.mq135 > 1000 ? "Poor Quality" : "Good Quality";
+                document.getElementById('airStatus').textContent = status;
+                document.getElementById('airStatus').style.color = data.mq135 > 1000 ? "var(--danger)" : "var(--success)";
+            }
 
             // Controls
-            updateControlState('fanControl', data.fan);
-            updateControlState('lightControl', data.light);
-
-            // Gate Visual Status
+            updateToggle('fanControl', data.fan);
+            updateToggle('lightControl', data.light);
+            
+            // Gate
             if (data.gate !== undefined) {
-                const gateEl = document.getElementById('gateControl');
-                const gateText = document.getElementById('gateStatusText');
+                const txt = document.getElementById('gateStatusText');
+                const card = document.getElementById('gateControl');
                 if (data.gate) {
-                    gateEl.classList.add('active');
-                    gateText.textContent = "Open";
-                    gateText.style.color = "var(--success)";
+                    txt.textContent = "OPEN";
+                    txt.style.color = "var(--success)";
+                    card.classList.add('active');
                 } else {
-                    gateEl.classList.remove('active');
-                    gateText.textContent = "Closed";
-                    gateText.style.color = "var(--text-muted)";
+                    txt.textContent = "CLOSED";
+                    txt.style.color = "var(--text-main)";
+                    card.classList.remove('active');
                 }
             }
         }
 
         function handleRfidScan(data) {
-            // 1. Update Scanner Card
-            const uidEl = document.getElementById('rfidUid');
+            document.getElementById('rfidUid').textContent = data.uid || "Unknown";
             const statusEl = document.getElementById('rfidStatus');
-            const cardEl = document.querySelector('.card-rfid');
-
-            uidEl.textContent = data.uid || "Unknown";
-
+            
             if (data.authorized) {
-                statusEl.textContent = "✅ Access Granted";
+                statusEl.textContent = "Authorized Access";
                 statusEl.style.color = "var(--success)";
-                statusEl.style.fontWeight = "bold";
-                showToast("Access Granted: Gate Opening", "success");
-                
-                // Visual Pulse
-                cardEl.style.border = "2px solid var(--success)";
-                setTimeout(() => cardEl.style.border = "none", 2000);
+                showToast("Access Granted", "success");
             } else {
-                statusEl.textContent = "❌ Access Denied";
+                statusEl.textContent = "Access Denied";
                 statusEl.style.color = "var(--danger)";
-                statusEl.style.fontWeight = "bold";
-                showToast("Unauthorized Access Attempt", "error");
-                
-                // Visual Pulse
-                cardEl.style.border = "2px solid var(--danger)";
-                setTimeout(() => cardEl.style.border = "none", 2000);
+                showToast("Access Denied", "error");
             }
-
-            // 2. Add to Log
             addToLog(data);
         }
 
         function addToLog(data) {
             const list = document.getElementById('accessLog');
-            
-            // Remove "No access attempts" message if it exists
-            if (list.children.length === 1 && list.children[0].textContent.includes("No access")) {
-                list.innerHTML = '';
-            }
+            if (list.children.length === 1 && list.children[0].textContent.includes("No recent")) list.innerHTML = '';
 
-            // Create Log Item
             const li = document.createElement('li');
             li.className = 'log-item';
-            
-            const timeStr = new Date().toLocaleTimeString();
-            const badgeClass = data.authorized ? 'badge-success' : 'badge-danger';
-            const iconClass = data.authorized ? 'fa-check' : 'fa-ban';
-            const statusText = data.authorized ? 'Authorized' : 'Denied';
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const statusClass = data.authorized ? 'log-success' : 'log-fail';
+            const statusText = data.authorized ? 'Auth' : 'Denied';
 
             li.innerHTML = `
-                <div class="log-info">
-                    <span class="log-uid">${data.uid}</span>
-                    <span class="log-time"><i class="fa-regular fa-clock"></i> ${timeStr}</span>
-                </div>
-                <div class="status-badge ${badgeClass}">
-                    <i class="fa-solid ${iconClass}"></i> ${statusText}
-                </div>
+                <span style="font-family:monospace; font-weight:600;">${data.uid}</span>
+                <span class="${statusClass}">${statusText}</span>
+                <span style="color:#94a3b8">${time}</span>
             `;
-
-            // Add to top
             list.insertBefore(li, list.firstChild);
-
-            // Limit to 10 entries
-            if (list.children.length > 10) {
-                list.removeChild(list.lastChild);
-            }
         }
 
-        function updateControlState(id, isActive) {
+        function updateToggle(id, active) {
             const el = document.getElementById(id);
-            if (!el) return;
-            if (isActive) el.classList.add('active');
+            if(active) el.classList.add('active');
             else el.classList.remove('active');
         }
 
-        function sendControl(command) {
-            if (!client || !client.isConnected()) {
-                showToast("Offline: Cannot send command", "error");
-                return;
-            }
-
-            const message = new Paho.MQTT.Message(command);
-            message.destinationName = TOPIC_CONTROL;
-            client.send(message);
-            console.log("Sent:", command);
+        function sendControl(cmd) {
+            if (!client || !client.isConnected()) return showToast("Offline", "error");
+            const msg = new Paho.MQTT.Message(cmd);
+            msg.destinationName = TOPIC_CONTROL;
+            client.send(msg);
         }
 
-        // --- UI Helpers ---
-        function updateConnectionUI(state, text) {
-            const container = document.getElementById('connectionStatus');
-            const txt = document.getElementById('statusText');
-            
-            container.className = "";
-            if (state === 'connected') container.classList.add('connected');
-            else container.classList.add('disconnected');
-            
-            txt.textContent = text;
+        function updateConnectionUI(cls, txt) {
+            const el = document.getElementById('connectionStatus');
+            el.className = cls;
+            document.getElementById('statusText').textContent = txt;
         }
 
         function showToast(msg, type) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMessage');
-            const toastIcon = document.getElementById('toastIcon');
-
-            toast.className = `toast ${type}`;
-            toastMsg.textContent = msg;
-            toastIcon.className = type === 'success' ? "fa-solid fa-circle-check" : "fa-solid fa-triangle-exclamation";
-            
-            toast.classList.add('show');
-            if (toast.timeoutId) clearTimeout(toast.timeoutId);
-            toast.timeoutId = setTimeout(() => toast.classList.remove('show'), 3000);
+            const t = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = msg;
+            document.getElementById('toastIcon').className = type === 'success' ? "fa-solid fa-circle-check" : "fa-solid fa-circle-exclamation";
+            t.className = `toast ${type} show`;
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
     </script>
 </body>
