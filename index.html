@@ -13,6 +13,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --purple: #8b5cf6;
             --dark: #1e293b;
             --text-main: #334155;
             --text-muted: #64748b;
@@ -148,10 +149,23 @@
         .sensor-card:hover { transform: translateY(-3px); }
 
         /* Responsive Columns for Sensors */
+        /* Tablet: 2 per row */
         @media (min-width: 640px) { .sensor-card { grid-column: span 6; } }
-        @media (min-width: 1024px) { .sensor-card { grid-column: span 3; } } /* 4 per row */
+        /* Desktop: 4 per row (Fits Temp, Humid, Light, Pressure nicely) */
+        @media (min-width: 1024px) { .sensor-card { grid-column: span 3; } } 
+        /* For 5 items (Air Quality wraps), or we can do a different span logic */
+        
+        /* Specific sizing for Air Quality if we want it to span wider on last row */
+        @media (min-width: 1024px) { 
+            .card-air { grid-column: span 12; } /* Full width bottom bar for Air Quality */
+        }
+        @media (min-width: 1280px) { 
+            .sensor-card { grid-column: span 2; } /* 5 items fit roughly? No 12/5 is hard. Let's keep grid simple */
+            .sensor-card { grid-column: span 3; } /* 4 per row */
+            .card-air { grid-column: span 12; } /* Air Quality full width */
+        }
 
-        /* Special sizing for RFID and Log */
+        /* RFID and Log Logic */
         .card-rfid { grid-column: span 12; }
         @media (min-width: 1024px) { .card-rfid { grid-column: span 4; } }
 
@@ -218,6 +232,9 @@
 
         .card-light .icon-box { background: #fef3c7; color: var(--warning); }
         .card-light::before { background: var(--warning); }
+
+        .card-pressure .icon-box { background: #ede9fe; color: var(--purple); }
+        .card-pressure::before { background: var(--purple); }
 
         .card-air .icon-box { background: #dcfce7; color: var(--success); }
         .card-air::before { background: var(--success); }
@@ -406,9 +423,19 @@
             </div>
         </div>
 
+        <div class="sensor-card card-pressure">
+            <div class="card-header">
+                <span class="card-label">Atm. Pressure</span>
+                <div class="icon-box"><i class="fa-solid fa-gauge-high"></i></div>
+            </div>
+            <div>
+                <span class="metric-value" id="pressure">--</span><span class="metric-unit">hPa</span>
+            </div>
+        </div>
+
         <div class="sensor-card card-air">
             <div class="card-header">
-                <span class="card-label">Air Quality</span>
+                <span class="card-label">Air Quality Index</span>
                 <div class="icon-box"><i class="fa-solid fa-wind"></i></div>
             </div>
             <div>
@@ -574,6 +601,7 @@
             if (data.dht_temp) document.getElementById('temp').textContent = data.dht_temp.toFixed(1);
             if (data.dht_humidity) document.getElementById('humidity').textContent = data.dht_humidity.toFixed(1);
             if (data.lightPercent !== undefined) document.getElementById('light').textContent = data.lightPercent.toFixed(0);
+            if (data.pressure_hpa !== undefined) document.getElementById('pressure').textContent = data.pressure_hpa.toFixed(1);
             if (data.mq135 !== undefined) document.getElementById('airquality').textContent = data.mq135;
 
             // Controls
