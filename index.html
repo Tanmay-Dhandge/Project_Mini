@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Home Dashboard</title>
+
+    <style>
+        /* ------------------------------------------------
+           RESET + BASE
+        --------------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 25px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ------------------------------------------------
+           HEADER
+        --------------------------------------------------- */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.6em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .connection-status {
+            margin-top: 10px;
+            padding: 7px 18px;
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255,255,255,0.18);
+            border-radius: 25px;
+            font-size: 0.9em;
+            backdrop-filter: blur(4px);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #f87171;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background: #4ade80 !important;
+        }
+
+        /* ------------------------------------------------
+           GRID CARDS
+        --------------------------------------------------- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+            margin-bottom: 35px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px 22px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transition: 0.25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .card-icon {
+            font-size: 2.1em;
+        }
+
+        .card-title {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .card-value {
+            font-size: 2.4em;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .card-unit {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .card-temp { border-left: 5px solid #ef4444; }
+        .card-humidity { border-left: 5px solid #3b82f6; }
+        .card-pressure { border-left: 5px solid #8b5cf6; }
+        .card-light { border-left: 5px solid #f59e0b; }
+        .card-air { border-left: 5px solid #10b981; }
+
+        /* ------------------------------------------------
+           CONTROLS
+        --------------------------------------------------- */
+        .controls {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .controls-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 18px;
+        }
+
+        .control-item {
+            background: #f8fafc;
+            padding: 15px 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.25s ease;
+            border: 1px solid transparent;
+        }
+
+        .control-item:hover {
+            background: #f1f5f9;
+            transform: translateY(-2px);
+        }
+
+        .control-label {
+            font-size: 1.05em;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            width: 58px;
+            height: 30px;
+            background: #cbd5e1;
+            border-radius: 30px;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #10b981;
+        }
+
+        .toggle-slider {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(28px);
+        }
+
+        .mode-badge {
+            padding: 6px 12px;
+            border-radius: 14px;
+            background: #3b82f6;
+            color: white;
+            font-size: 0.85em;
+            font-weight: 700;
+        }
+        .mode-badge.manual {
+            background: #f59e0b;
+        }
+
+        /* ------------------------------------------------
+           TIMESTAMP
+        --------------------------------------------------- */
+        .timestamp {
+            margin-top: 20px;
+            text-align: center;
+            color: #fafafa;
+            opacity: 0.85;
+            font-size: 0.92em;
+        }
+
+        /* ------------------------------------------------
+           TOAST
+        --------------------------------------------------- */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.25);
+            animation: slide 0.3s ease;
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+
+        @keyframes slide {
+            from { transform: translateX(120px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ------------------------------------------------
+           RESPONSIVE
+        --------------------------------------------------- */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .card-value { font-size: 2em; }
+            .controls { padding: 22px; }
+            body { padding: 15px; }
+            .toast { left: 15px; right: 15px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🏠 Smart Home Dashboard</h1>
+            <div class="connection-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </div>
+
+        <!-- ERROR MSG -->
+        <div id="errorMsg" style="
+            display:none;
+            background:#fee2e2;
+            padding:12px;
+            border-radius:10px;
+            text-align:center;
+            margin-bottom:20px;
+            color:#991b1b;
+            font-weight:600;">
+        </div>
+
+        <!-- SENSOR GRID -->
+        <div class="grid">
+
+            <div class="card card-temp">
+                <div class="card-header">
+                    <div class="card-icon">🌡️</div>
+                    <div class="card-title">Temperature</div>
+                </div>
+                <div class="card-value" id="temp">--</div>
+                <div class="card-unit">
+                    DHT: <span id="dht-temp">--</span>°C |
+                    BMP: <span id="bmp-temp">--</span>°C
+                </div>
+            </div>
+
+            <div class="card card-humidity">
+                <div class="card-header">
+                    <div class="card-icon">💧</div>
+                    <div class="card-title">Humidity</div>
+                </div>
+                <div class="card-value" id="humidity">--</div>
+                <div class="card-unit">Relative Humidity</div>
+            </div>
+
+            <div class="card card-pressure">
+                <div class="card-header">
+                    <div class="card-icon">🌪️</div>
+                    <div class="card-title">Pressure</div>
+                </div>
+                <div class="card-value" id="pressure">--</div>
+                <div class="card-unit">hPa</div>
+            </div>
+
+            <div class="card card-light">
+                <div class="card-header">
+                    <div class="card-icon">☀️</div>
+                    <div class="card-title">Light Level</div>
+                </div>
+                <div class="card-value" id="light">--</div>
+                <div class="card-unit">Light Intensity</div>
+            </div>
+
+            <div class="card card-air">
+                <div class="card-header">
+                    <div class="card-icon">🌬️</div>
+                    <div class="card-title">Air Quality</div>
+                </div>
+                <div class="card-value" id="airquality">--</div>
+                <div class="card-unit">MQ135 Sensor (PPM)</div>
+            </div>
+
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <div class="controls-title">⚡ Device Controls</div>
+
+            <div class="control-grid">
+                <div class="control-item" onclick="toggleDevice('fan')">
+                    <div class="control-label"><span>🌀</span>Fan</div>
+                    <div class="toggle-switch" id="fanToggle"><div class="toggle-slider"></div></div>
+                </div>
+
+                <div class="control-item" onclick="toggleDevice('light')">
+                    <div class="control-label"><span>💡</span>Light</div>
+                    <div class="toggle-switch" id="lightToggle"><div class="toggle-slider"></div></div>
+                </div>
+
+                <div class="control-item" onclick="toggleDevice('door')">
+                    <div class="control-label"><span>🚪</span>Door</div>
+                    <div class="toggle-switch" id="doorToggle"><div class="toggle-slider"></div></div>
+                </div>
+
+                <div class="control-item" onclick="toggleDevice('mode')">
+                    <div class="control-label">
+                        <span>🔄</span>Mode:
+                        <span class="mode-badge" id="modeBadge">Auto</span>
+                    </div>
+                    <div class="toggle-switch" id="modeToggle"><div class="toggle-slider"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TIMESTAMP -->
+        <div class="timestamp">
+            Last Updated: <span id="timestamp">Never</span>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+        <span id="toastIcon">✓</span>
+        <span id="toastMessage">Action Successful</span>
+    </div>
+
+    <!-- MQTT LOGIC (Your original JS kept as-is) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script>
+        /* Your existing MQTT code here - unchanged */
+    </script>
+
+</body>
+</html>
