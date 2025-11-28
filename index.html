@@ -3,459 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Home Dashboard</title>
+    <title>BTech Mini Project</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #2563eb;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --purple: #8b5cf6;
-            --dark: #1e293b;
-            --text-main: #334155;
-            --text-muted: #64748b;
-            --bg: #f1f5f9;
-            --card-bg: #ffffff;
-            --border-radius: 16px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            /* --- Theme Variables --- */
+            --bg-color: #eceff4;      /* Slate Background */
+            --parent-card-bg: #ffffff;
+            --inner-card-bg: #f8fafc;
+            
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            
+            /* Status Colors */
+            --accent-orange: #f97316;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --border: 1px solid #e2e8f0;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-primary); min-height: 100vh; padding: 20px; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* --- Navigation --- */
-        .navbar {
+        /* --- Layout Structure --- */
+        .app-layout {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            padding: 15px 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            max-width: 1400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .brand {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand i { color: var(--primary); font-size: 1.2rem; }
-
-        .connection-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            background: #e2e8f0;
-            color: var(--text-muted);
-            transition: all 0.3s ease;
-        }
-
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--text-muted);
-        }
-
-        .connected .connection-badge { background: #dcfce7; color: #166534; }
-        .connected .status-indicator { background-color: var(--success); box-shadow: 0 0 0 2px #dcfce7; }
-        .disconnected .connection-badge { background: #fee2e2; color: #991b1b; }
-        .disconnected .status-indicator { background-color: var(--danger); animation: pulse 1.5s infinite; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        /* --- Main Grid Layout --- */
-        .main-wrapper {
+            gap: 24px;
             max-width: 1400px;
             margin: 0 auto;
+            align-items: flex-start;
         }
 
-        .section-header {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin: 30px 0 15px 5px;
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: var(--parent-card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: center;
+        }
+        .brand-section h2 { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+        .brand-section p { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .nav-card {
+            background: var(--inner-card-bg);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 12px;
         }
+        .nav-card:hover { border-color: #cbd5e1; transform: translateX(4px); background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
-        .section-header::after {
-            content: '';
-            height: 1px;
-            background: #e2e8f0;
-            flex: 1;
+        .nav-card.active {
+            background: #eff6ff;
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
         }
+        .nav-card.active i { color: var(--accent-blue); }
+        .nav-card i { font-size: 1.2rem; color: var(--text-secondary); transition: 0.2s; }
+        .nav-card span { font-weight: 600; font-size: 0.95rem; }
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-            align-items: stretch;
+        /* --- Main Content --- */
+        .main-content { flex-grow: 1; width: 100%; }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
         }
+        .header-left h1 { font-size: 1.8rem; font-weight: 700; color: #0f172a; }
+        .header-left p { color: var(--text-secondary); font-size: 0.9rem; }
 
-        /* --- Unified Card Styles --- */
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 24px;
+        .status-badge {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 50px;
             box-shadow: var(--shadow);
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-            min-height: 200px;
-            border: 1px solid transparent;
-        }
-
-        .card:hover { 
-            transform: translateY(-4px); 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-        }
-
-        /* Card Header Section */
-        .card-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .card-title {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .card-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-
-        /* Card Body Section */
-        .card-body {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-
-        .value-display {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--dark);
-            line-height: 1;
-        }
-
-        .unit-display {
-            font-size: 1rem;
-            color: var(--text-muted);
+            gap: 10px;
             font-weight: 500;
-            margin-left: 4px;
-        }
-
-        .sub-text {
             font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 8px;
+            color: var(--text-secondary);
         }
 
-        /* --- Color Variants --- */
-        /* Temp */
-        .type-temp::before { background: var(--danger); }
-        .type-temp .card-icon { background: #fee2e2; color: var(--danger); }
-        
-        /* Humid */
-        .type-humid::before { background: var(--primary); }
-        .type-humid .card-icon { background: #dbeafe; color: var(--primary); }
-        
-        /* Pressure */
-        .type-pressure::before { background: var(--purple); }
-        .type-pressure .card-icon { background: #f3e8ff; color: var(--purple); }
-        
-        /* Light */
-        .type-light::before { background: var(--warning); }
-        .type-light .card-icon { background: #fef3c7; color: var(--warning); }
-        
-        /* Air */
-        .type-air::before { background: var(--success); }
-        .type-air .card-icon { background: #dcfce7; color: var(--success); }
+        .pulse-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #d1d5db; }
+        .pulse-dot.online { background-color: var(--accent-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        .pulse-dot.offline { background-color: var(--accent-red); animation: pulse-red 1.5s infinite; }
 
-        /* Controls */
-        .type-control::before { background: #64748b; }
-        .type-control .card-icon { background: #f1f5f9; color: #64748b; }
-        .type-control.active::before { background: var(--success); }
-        .type-control.active .card-icon { background: #dcfce7; color: var(--success); }
-        .type-control.active { border-color: #bbf7d0; background: #f0fdf4; }
-
-        /* --- Toggle Switch --- */
-        .toggle-wrapper {
-            margin-top: 15px;
-            display: flex;
-            justify-content: flex-end;
+        /* --- Dashboard Cards --- */
+        .parent-card {
+            background: var(--parent-card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
         }
 
-        .toggle {
-            position: relative;
-            width: 50px;
-            height: 28px;
-            background: #cbd5e1;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .toggle::after {
-            content: '';
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .active .toggle { background: var(--success); }
-        .active .toggle::after { transform: translateX(22px); }
-
-        /* Gate Buttons */
-        .gate-btns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .btn {
-            border: 1px solid #e2e8f0;
-            background: white;
-            padding: 8px;
-            border-radius: 8px;
-            cursor: pointer;
+        .section-title {
+            font-size: 1.1rem;
             font-weight: 600;
-            color: var(--text-main);
-            transition: 0.2s;
-        }
-        .btn:hover { background: #f8fafc; }
-        .btn:active { transform: scale(0.95); }
-
-        /* --- Toast --- */
-        .toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 1000;
-        }
-        .toast {
-            background: var(--dark);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
             display: flex;
             align-items: center;
             gap: 10px;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
         }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast.success { border-left: 4px solid var(--success); }
-        .toast.error { border-left: 4px solid var(--danger); }
+        .section-title i { color: var(--accent-blue); }
+
+        /* Grids */
+        .monitoring-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+        .control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+
+        /* Widgets */
+        .widget-card {
+            background: var(--inner-card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 150px;
+            transition: all 0.2s ease;
+            flex: 0 1 calc(33.333% - 16px); 
+            min-width: 250px; 
+        }
+        .widget-card:hover { border-color: #cbd5e1; transform: translateY(-2px); }
+
+        .widget-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .widget-label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .widget-value { font-size: 2.2rem; font-weight: 700; color: var(--text-primary); }
+        .unit { font-size: 1rem; font-weight: 500; color: var(--text-secondary); margin-left: 4px; }
+        .widget-footer { margin-top: 15px; font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; }
+
+        /* Icon Boxes */
+        .icon-box { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .bg-orange { background: #fff7ed; color: var(--accent-orange); }
+        .bg-blue { background: #eff6ff; color: var(--accent-blue); }
+        .bg-purple { background: #f5f3ff; color: var(--accent-purple); }
+        .bg-green { background: #ecfdf5; color: var(--accent-green); }
+        .bg-cyan { background: #ecfeff; color: var(--accent-cyan); }
+
+        /* Toggles & Controls */
+        .control-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        
+        .toggle-wrapper {
+            position: relative; width: 52px; height: 28px; background: #cbd5e1; border-radius: 14px; cursor: pointer; transition: 0.3s; flex-shrink: 0;
+        }
+        .toggle-wrapper::after {
+            content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .toggle-active { background: var(--accent-green); }
+        .toggle-active::after { transform: translateX(24px); }
+
+        /* --- Surveillance Specific --- */
+        .video-container {
+            width: 100%;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 16 / 9; /* Widescreen ratio */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        #surveillanceFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none; /* Hidden by default until feed connects */
+        }
+
+        .video-placeholder {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: #64748b;
+        }
+
+        .live-badge {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(239, 68, 68, 0.9); color: white;
+            padding: 4px 12px; border-radius: 4px;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            display: none; animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 900px) {
+            .app-layout { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; margin-bottom: 20px; }
+            .widget-card { flex: 0 1 calc(50% - 12px); }
+        }
+        @media (max-width: 600px) { .widget-card { flex: 1 1 100%; } }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed; bottom: 30px; right: 30px; background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; opacity: 0; transform: translateY(20px); transition: 0.3s; z-index: 1000;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="brand">
-            <i class="fa-solid fa-cube"></i>
-            <span>Smart Dashboard</span>
-        </div>
-        <div id="connectionStatus" class="disconnected">
-            <div class="connection-badge">
-                <div class="status-indicator"></div>
-                <span id="statusText">Connecting...</span>
-            </div>
-        </div>
-    </nav>
+    <div class="app-layout">
 
-    <div class="main-wrapper">
-        
-        <div class="section-header">Live Environment</div>
-        <div class="grid-container">
+        <aside class="sidebar">
+            <div class="brand-section">
+                <h2>IoT System</h2>
+                <p> Control Panel</p>
+            </div>
             
-            <div class="card type-temp">
-                <div class="card-top">
-                    <span class="card-title">Temperature</span>
-                    <div class="card-icon"><i class="fa-solid fa-temperature-half"></i></div>
-                </div>
-                <div class="card-body">
-                    <div>
-                        <span class="value-display" id="temp">--</span>
-                        <span class="unit-display">°C</span>
-                    </div>
-                    <div class="sub-text">Indoor Sensor</div>
-                </div>
+            <div class="nav-card active" onclick="switchPage('dashboard', this)">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Dashboard</span>
             </div>
 
-            <div class="card type-humid">
-                <div class="card-top">
-                    <span class="card-title">Humidity</span>
-                    <div class="card-icon"><i class="fa-solid fa-droplet"></i></div>
-                </div>
-                <div class="card-body">
-                    <div>
-                        <span class="value-display" id="humidity">--</span>
-                        <span class="unit-display">%</span>
-                    </div>
-                    <div class="sub-text">Relative Humidity</div>
-                </div>
+            <div class="nav-card" onclick="switchPage('surveillance', this)">
+                <i class="fa-solid fa-video"></i>
+                <span>Surveillance</span>
             </div>
+        </aside>
 
-            <div class="card type-pressure">
-                <div class="card-top">
-                    <span class="card-title">Pressure</span>
-                    <div class="card-icon"><i class="fa-solid fa-gauge-high"></i></div>
+        <main class="main-content">
+            
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Home Automation</h1>
+                    <p>Real-time Overview</p>
                 </div>
-                <div class="card-body">
-                    <div>
-                        <span class="value-display" id="pressure">--</span>
-                        <span class="unit-display">hPa</span>
+                <div class="status-badge">
+                    <div id="connectionDot" class="pulse-dot"></div>
+                    <span id="connectionText">Connecting...</span>
+                </div>
+            </header>
+
+            <div id="page-dashboard">
+                
+                <div class="parent-card">
+                    <div class="section-title"><i class="fa-solid fa-chart-line"></i>Monitoring Data</div>
+                    <div class="monitoring-grid">
+                        <div class="widget-card">
+                            <div class="widget-header"><span class="widget-label">Temperature</span><div class="icon-box bg-orange"><i class="fa-solid fa-temperature-half"></i></div></div>
+                            <div class="widget-value"><span id="temp">--</span><span class="unit">°C</span></div>
+                            <div class="widget-footer"><i class="fa-solid fa-circle-check" style="color:var(--accent-green)"></i> Normal Range</div>
+                        </div>
+                        <div class="widget-card">
+                            <div class="widget-header"><span class="widget-label">Humidity</span><div class="icon-box bg-blue"><i class="fa-solid fa-droplet"></i></div></div>
+                            <div class="widget-value"><span id="humidity">--</span><span class="unit">%</span></div>
+                            <div class="widget-footer">Relative Humidity</div>
+                        </div>
+                        <div class="widget-card">
+                            <div class="widget-header"><span class="widget-label">Pressure</span><div class="icon-box bg-purple"><i class="fa-solid fa-gauge-high"></i></div></div>
+                            <div class="widget-value"><span id="pressure">--</span><span class="unit">hPa</span></div>
+                            <div class="widget-footer">Atmospheric</div>
+                        </div>
+                        <div class="widget-card">
+                            <div class="widget-header"><span class="widget-label">Air Quality</span><div class="icon-box bg-green"><i class="fa-solid fa-wind"></i></div></div>
+                            <div class="widget-value"><span id="airquality">--</span><span class="unit">PPM</span></div>
+                            <div class="widget-footer" id="airStatusText">Analyzing...</div>
+                        </div>
+                        <div class="widget-card">
+                            <div class="widget-header"><span class="widget-label">Brightness</span><div class="icon-box bg-orange"><i class="fa-solid fa-sun"></i></div></div>
+                            <div class="widget-value"><span id="light">--</span><span class="unit">%</span></div>
+                            <div class="widget-footer">Ambient Light</div>
+                        </div>
                     </div>
-                    <div class="sub-text">Atmospheric</div>
                 </div>
-            </div>
 
-            <div class="card type-light">
-                <div class="card-top">
-                    <span class="card-title">Brightness</span>
-                    <div class="card-icon"><i class="fa-solid fa-sun"></i></div>
-                </div>
-                <div class="card-body">
-                    <div>
-                        <span class="value-display" id="light">--</span>
-                        <span class="unit-display">%</span>
-                    </div>
-                    <div class="sub-text">Ambient Light</div>
-                </div>
-            </div>
-
-            <div class="card type-air">
-                <div class="card-top">
-                    <span class="card-title">Air Quality</span>
-                    <div class="card-icon"><i class="fa-solid fa-wind"></i></div>
-                </div>
-                <div class="card-body">
-                    <div>
-                        <span class="value-display" id="airquality">--</span>
-                        <span class="unit-display">PPM</span>
-                    </div>
-                    <div class="sub-text" id="airStatus">Analyzing...</div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="section-header">Device Controls</div>
-        <div class="grid-container">
-
-            <div class="card type-control" id="gateControl">
-                <div class="card-top">
-                    <span class="card-title">Main Gate</span>
-                    <div class="card-icon"><i class="fa-solid fa-dungeon"></i></div>
-                </div>
-                <div class="card-body">
-                    <div style="font-weight: 700; font-size: 1.2rem;" id="gateStatusText">Closed</div>
-                    <div class="gate-btns">
-                        <button class="btn" onclick="sendControl('gate-open')">OPEN</button>
-                        <button class="btn" onclick="sendControl('gate-close')">CLOSE</button>
+                <div class="parent-card">
+                    <div class="section-title"><i class="fa-solid fa-sliders"></i>Device Control</div>
+                    <div class="control-grid">
+                        <div class="widget-card" onclick="sendControl('fan-toggle')">
+                            <div class="widget-header"><span class="widget-label">Ventilation</span><div class="icon-box bg-cyan"><i class="fa-solid fa-fan"></i></div></div>
+                            <div class="control-row"><span style="font-weight:600;">System Fan</span><div id="fanToggle" class="toggle-wrapper"></div></div>
+                        </div>
+                        <div class="widget-card" onclick="sendControl('light-toggle')">
+                            <div class="widget-header"><span class="widget-label">Lighting</span><div class="icon-box bg-orange"><i class="fa-solid fa-lightbulb"></i></div></div>
+                            <div class="control-row"><span style="font-weight:600;">Main Lamp</span><div id="lightToggle" class="toggle-wrapper"></div></div>
+                        </div>
+                        <div class="widget-card" onclick="toggleGate()">
+                            <div class="widget-header"><span class="widget-label">Access Control</span><div class="icon-box bg-purple"><i class="fa-solid fa-dungeon"></i></div></div>
+                            <div class="control-row">
+                                <div style="display:flex; flex-direction:column;"><span style="font-weight:600;">Main Gate</span><span id="gateStatusText" style="font-size: 0.8rem; color: var(--text-secondary);">Closed</span></div>
+                                <div id="gateToggle" class="toggle-wrapper"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card type-control" id="fanControl" onclick="sendControl('fan-toggle')">
-                <div class="card-top">
-                    <span class="card-title">Fan Control</span>
-                    <div class="card-icon"><i class="fa-solid fa-fan"></i></div>
-                </div>
-                <div class="card-body">
-                    <div style="font-weight: 700; font-size: 1.2rem;">Ventilation</div>
-                    <div class="toggle-wrapper">
-                        <div class="toggle"></div>
+            <div id="page-surveillance" style="display: none;">
+                <div class="parent-card">
+                    <div class="section-title">
+                        <i class="fa-solid fa-video"></i>
+                        Live Camera Feed
+                    </div>
+                    
+                    <div class="video-container">
+                        <div class="live-badge" id="liveBadge">LIVE</div>
+                        
+                        <img id="surveillanceFeed" src="" alt="Live Stream">
+                        
+                        <div id="videoPlaceholder" class="video-placeholder">
+                            <i class="fa-solid fa-eye-slash" style="font-size: 3rem; margin-bottom: 20px; color: #cbd5e1;"></i>
+                            <h3>Feed Offline</h3>
+                            <p id="videoStatusMsg">Connecting to Video Server...</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card type-control" id="lightControl" onclick="sendControl('light-toggle')">
-                <div class="card-top">
-                    <span class="card-title">Light Control</span>
-                    <div class="card-icon"><i class="fa-solid fa-lightbulb"></i></div>
-                </div>
-                <div class="card-body">
-                    <div style="font-weight: 700; font-size: 1.2rem;">Main Light</div>
-                    <div class="toggle-wrapper">
-                        <div class="toggle"></div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
+        </main>
     </div>
 
-    <div class="toast-container">
-        <div id="toast" class="toast">
-            <i id="toastIcon" class="fa-solid fa-circle-check"></i>
-            <span id="toastMessage">System Ready</span>
-        </div>
-    </div>
+    <div id="toast" class="toast">Action Sent</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+
     <script>
+        // ▼▼▼ CONFIGURATION: PASTE YOUR RENDER BACKEND URL HERE ▼▼▼
+        const RENDER_VIDEO_URL = "https://live-feed-9d9b.onrender.com"; 
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+        // === 1. PAGE NAVIGATION LOGIC ===
+        function switchPage(pageId, navElement) {
+            // Hide all pages
+            document.getElementById('page-dashboard').style.display = 'none';
+            document.getElementById('page-surveillance').style.display = 'none';
+            
+            // Show selected page
+            document.getElementById('page-' + pageId).style.display = 'block';
+            
+            // Update Title
+            const titles = { 'dashboard': 'Dashboard', 'surveillance': 'Surveillance' };
+            document.getElementById('pageTitle').innerText = titles[pageId];
+
+            // Update Navigation Active State
+            const navCards = document.querySelectorAll('.nav-card');
+            navCards.forEach(card => card.classList.remove('active'));
+            if(navElement) navElement.classList.add('active');
+        }
+
+        // === 2. VIDEO STREAMING LOGIC (SOCKET.IO) ===
+        // This connects to your Render backend to get frames from the laptop
+        const videoSocket = io(RENDER_VIDEO_URL);
+        const imgEl = document.getElementById('surveillanceFeed');
+        const placeholderEl = document.getElementById('videoPlaceholder');
+        const badgeEl = document.getElementById('liveBadge');
+        const statusMsg = document.getElementById('videoStatusMsg');
+
+        videoSocket.on('connect', () => {
+            console.log("✅ Connected to Render Video Server");
+            statusMsg.innerText = "Waiting for Camera Source...";
+        });
+
+        videoSocket.on('new_frame_for_viewers', (data) => {
+            // If we receive a frame, show the image and hide the placeholder
+            imgEl.style.display = 'block';
+            placeholderEl.style.display = 'none';
+            badgeEl.style.display = 'block';
+            
+            // Update the image source with the Base64 data
+            imgEl.src = data; 
+        });
+
+        videoSocket.on('disconnect', () => {
+            console.log("❌ Video Server Disconnected");
+            imgEl.style.display = 'none';
+            placeholderEl.style.display = 'flex';
+            badgeEl.style.display = 'none';
+            statusMsg.innerText = "Server Disconnected";
+        });
+
+        // === 3. SENSOR & CONTROL LOGIC (MQTT) ===
         const MQTT_SERVER = "afc8a0ac2ccf462c8f92b932403518df.s1.eu.hivemq.cloud";
         const MQTT_PORT = 8884;
         const MQTT_USER = "hivemq.webclient.1761751067946";
@@ -465,15 +419,15 @@
         const TOPIC_STATUS = "project/status";
         const TOPIC_CONTROL = "project/control";
 
-        let client;
+        let mqttClient;
 
         window.addEventListener('load', connectMQTT);
 
         function connectMQTT() {
             const clientId = "web-" + Math.random().toString(16).substr(2, 8);
-            client = new Paho.MQTT.Client(MQTT_SERVER, MQTT_PORT, clientId);
-            client.onConnectionLost = onConnectionLost;
-            client.onMessageArrived = onMessageArrived;
+            mqttClient = new Paho.MQTT.Client(MQTT_SERVER, MQTT_PORT, clientId);
+            mqttClient.onConnectionLost = onConnectionLost;
+            mqttClient.onMessageArrived = onMessageArrived;
 
             const options = {
                 useSSL: true,
@@ -483,27 +437,28 @@
                 onFailure: onFailure,
                 keepAliveInterval: 30
             };
-            updateConnectionUI("connecting", "Connecting...");
-            client.connect(options);
+            
+            updateStatusUI(false, "Connecting to HiveMQ...");
+            mqttClient.connect(options);
         }
 
         function onConnect() {
             console.log("✅ MQTT Connected");
-            updateConnectionUI("connected", "Online");
-            client.subscribe(TOPIC_SENSORS);
-            client.subscribe(TOPIC_STATUS);
-            showToast("System Connected", "success");
+            updateStatusUI(true, "System Online");
+            mqttClient.subscribe(TOPIC_SENSORS);
+            mqttClient.subscribe(TOPIC_STATUS);
+            showToast("Connected to Sensors");
         }
 
         function onFailure(e) {
             console.error(e);
-            updateConnectionUI("disconnected", "Failed");
+            updateStatusUI(false, "Connection Failed");
             setTimeout(connectMQTT, 5000);
         }
 
         function onConnectionLost(response) {
             if (response.errorCode !== 0) {
-                updateConnectionUI("disconnected", "Reconnecting...");
+                updateStatusUI(false, "Reconnecting...");
                 setTimeout(connectMQTT, 3000);
             }
         }
@@ -516,7 +471,7 @@
         }
 
         function updateDashboard(data) {
-            // Sensors
+            // Update Sensors
             if (data.dht_temp) document.getElementById('temp').textContent = data.dht_temp.toFixed(1);
             if (data.dht_humidity) document.getElementById('humidity').textContent = data.dht_humidity.toFixed(1);
             if (data.pressure_hpa) document.getElementById('pressure').textContent = data.pressure_hpa.toFixed(1);
@@ -525,54 +480,68 @@
             if (data.mq135 !== undefined) {
                 document.getElementById('airquality').textContent = data.mq135;
                 const status = data.mq135 > 1000 ? "Poor Quality" : "Good Quality";
-                document.getElementById('airStatus').textContent = status;
-                document.getElementById('airStatus').style.color = data.mq135 > 1000 ? "var(--danger)" : "var(--success)";
+                const el = document.getElementById('airStatusText');
+                el.textContent = status;
+                el.style.color = data.mq135 > 1000 ? "var(--accent-red)" : "var(--accent-green)";
             }
 
-            // Controls
-            updateToggle('fanControl', data.fan);
-            updateToggle('lightControl', data.light);
+            // Update Controls
+            updateToggle('fanToggle', data.fan);
+            updateToggle('lightToggle', data.light);
             
-            // Gate
+            // Update Gate UI
             if (data.gate !== undefined) {
                 const txt = document.getElementById('gateStatusText');
-                const card = document.getElementById('gateControl');
+                const toggle = document.getElementById('gateToggle');
                 if (data.gate) {
                     txt.textContent = "OPEN";
-                    txt.style.color = "var(--success)";
-                    card.classList.add('active');
+                    txt.style.color = "var(--accent-green)";
+                    toggle.classList.add('toggle-active');
                 } else {
                     txt.textContent = "CLOSED";
-                    txt.style.color = "var(--text-main)";
-                    card.classList.remove('active');
+                    txt.style.color = "var(--text-secondary)";
+                    toggle.classList.remove('toggle-active');
                 }
             }
         }
 
         function updateToggle(id, active) {
             const el = document.getElementById(id);
-            if(active) el.classList.add('active');
-            else el.classList.remove('active');
+            if(active) el.classList.add('toggle-active');
+            else el.classList.remove('toggle-active');
+        }
+
+        function toggleGate() {
+             const toggle = document.getElementById('gateToggle');
+             const isActive = toggle.classList.contains('toggle-active');
+             sendControl(isActive ? 'gate-close' : 'gate-open');
         }
 
         function sendControl(cmd) {
-            if (!client || !client.isConnected()) return showToast("Offline", "error");
+            if (!mqttClient || !mqttClient.isConnected()) return showToast("Offline - Cannot send");
             const msg = new Paho.MQTT.Message(cmd);
             msg.destinationName = TOPIC_CONTROL;
-            client.send(msg);
+            mqttClient.send(msg);
+            showToast("Command Sent: " + cmd);
         }
 
-        function updateConnectionUI(cls, txt) {
-            const el = document.getElementById('connectionStatus');
-            el.className = cls;
-            document.getElementById('statusText').textContent = txt;
+        function updateStatusUI(isConnected, text) {
+            const dot = document.getElementById('connectionDot');
+            const txt = document.getElementById('connectionText');
+            txt.textContent = text;
+            if(isConnected) {
+                dot.className = "pulse-dot online";
+                txt.style.color = "var(--accent-green)";
+            } else {
+                dot.className = "pulse-dot offline";
+                txt.style.color = "var(--text-secondary)";
+            }
         }
 
-        function showToast(msg, type) {
+        function showToast(msg) {
             const t = document.getElementById('toast');
-            document.getElementById('toastMessage').textContent = msg;
-            document.getElementById('toastIcon').className = type === 'success' ? "fa-solid fa-circle-check" : "fa-solid fa-circle-exclamation";
-            t.className = `toast ${type} show`;
+            t.textContent = msg;
+            t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
         }
     </script>
